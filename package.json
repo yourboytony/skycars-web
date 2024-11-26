@@ -15,9 +15,9 @@
     "axios": "^1.6.2"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20231218.0",
+    "@cloudflare/workers-types": "^4.20241112.0",
     "@vitejs/plugin-vue": "^4.5.2",
-    "typescript": "^5.0.0",
+    "typescript": "^5.3.3",
     "vite": "^5.0.8"
   }
 } 
