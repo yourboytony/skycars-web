@@ -1,19 +1,27 @@
-import { D1Database } from '@cloudflare/workers-types'
-
 export async function onRequest(context) {
   const { request, env } = context
-  const JWT_SECRET = env.JWT_SECRET // Get secret from environment
+  const JWT_SECRET = env.JWT_SECRET
   
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/auth/', '')
 
-  switch (path) {
-    case 'login':
-      return handleLogin(request, env.DB, JWT_SECRET)
-    case 'register':
-      return handleRegister(request, env.DB, JWT_SECRET)
-    default:
-      return new Response('Not found', { status: 404 })
+  try {
+    switch (path) {
+      case 'login':
+        return handleLogin(request, env.DB, JWT_SECRET)
+      case 'register':
+        return handleRegister(request, env.DB, JWT_SECRET)
+      default:
+        return new Response('Not found', { 
+          status: 404,
+          headers: { 'Content-Type': 'application/json' }
+        })
+    }
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Server error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
   }
 }
 
@@ -23,10 +31,12 @@ async function handleLogin(request, db, JWT_SECRET) {
   try {
     const hashedPassword = await hashPassword(password)
     
-    const stmt = db.prepare(
-      'SELECT id, username, email FROM users WHERE email = ? AND password_hash = ?'
-    )
-    const user = await stmt.bind(email, hashedPassword).first()
+    const { results } = await db
+      .prepare('SELECT id, username, email FROM users WHERE email = ? AND password_hash = ?')
+      .bind(email, hashedPassword)
+      .all()
+
+    const user = results?.[0]
 
     if (!user) {
       return new Response(
@@ -63,12 +73,12 @@ async function handleRegister(request, db, JWT_SECRET) {
   
   try {
     // Check if user exists
-    const stmt = db.prepare(
-      'SELECT id FROM users WHERE email = ? OR username = ?'
-    )
-    const existingUser = await stmt.bind(email, username).first()
+    const { results } = await db
+      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
+      .bind(email, username)
+      .all()
 
-    if (existingUser) {
+    if (results?.length > 0) {
       return new Response(
         JSON.stringify({ message: 'User already exists' }), 
         { 
@@ -81,9 +91,10 @@ async function handleRegister(request, db, JWT_SECRET) {
     const hashedPassword = await hashPassword(password)
     
     // Insert new user
-    const result = await db.prepare(
-      'INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)'
-    ).bind(email, username, hashedPassword).run()
+    const result = await db
+      .prepare('INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)')
+      .bind(email, username, hashedPassword)
+      .run()
 
     const user = {
       id: result.lastRowId,
@@ -111,7 +122,6 @@ async function handleRegister(request, db, JWT_SECRET) {
   }
 }
 
-// Use Web Crypto API for password hashing
 async function hashPassword(password) {
   const encoder = new TextEncoder()
   const data = encoder.encode(password)
@@ -119,14 +129,12 @@ async function hashPassword(password) {
   return bufferToHex(hash)
 }
 
-// Helper function to convert buffer to hex string
 function bufferToHex(buffer) {
   return Array.from(new Uint8Array(buffer))
     .map(b => b.toString(16).padStart(2, '0'))
     .join('')
 }
 
-// Simple token generation (in production, use a proper JWT implementation)
 async function generateToken(user, JWT_SECRET) {
   const header = { alg: 'HS256', typ: 'JWT' }
   const payload = {
