@@ -44,7 +44,9 @@ export const useAuthStore = defineStore('auth', {
     async register(email, password, username) {
       this.loading = true
       this.error = null
+      
       try {
+        console.log('Sending registration request')
         const response = await fetch('/api/auth/register', {
           method: 'POST',
           headers: {
@@ -54,13 +56,19 @@ export const useAuthStore = defineStore('auth', {
         })
 
         const data = await response.json()
+        console.log('Registration response:', data)
         
-        if (!response.ok) throw new Error(data.message)
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed')
+        }
 
         this.token = data.token
         this.user = data.user
         localStorage.setItem('token', data.token)
+        
+        return data
       } catch (error) {
+        console.error('Registration error:', error)
         this.error = error.message
         throw error
       } finally {

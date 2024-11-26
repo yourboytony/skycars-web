@@ -96,13 +96,21 @@ async function handleLogin(request, db, JWT_SECRET) {
 
 async function handleRegister(request, db, JWT_SECRET) {
   try {
-    const { email, password, username } = await request.json()
+    console.log('Starting registration process')
     
+    // Log the request body
+    const body = await request.json()
+    console.log('Request body:', body)
+    
+    const { email, password, username } = body
+
     // Validate input
     if (!email || !password || !username) {
+      console.log('Missing required fields')
       return new Response(
         JSON.stringify({ 
-          message: 'Email, password, and username are required' 
+          message: 'Email, password, and username are required',
+          received: { email: !!email, password: !!password, username: !!username }
         }), 
         { 
           status: 400,
@@ -114,68 +122,87 @@ async function handleRegister(request, db, JWT_SECRET) {
       )
     }
 
+    console.log('Checking for existing user')
     // Check if user exists
-    const existingUser = await db
-      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
-      .bind(email, username)
-      .first()
+    try {
+      const existingUser = await db
+        .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
+        .bind(email, username)
+        .first()
 
-    if (existingUser) {
-      return new Response(
-        JSON.stringify({ 
-          message: 'Email or username already exists' 
-        }), 
-        { 
-          status: 400,
-          headers: { 
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+      console.log('Existing user check result:', existingUser)
+
+      if (existingUser) {
+        return new Response(
+          JSON.stringify({ 
+            message: 'Email or username already exists' 
+          }), 
+          { 
+            status: 400,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
           }
-        }
-      )
+        )
+      }
+    } catch (dbError) {
+      console.error('Database error during user check:', dbError)
+      throw new Error('Database error during user check: ' + dbError.message)
     }
 
+    console.log('Hashing password')
     const hashedPassword = await hashPassword(password)
     
+    console.log('Inserting new user')
     // Insert new user
-    const result = await db
-      .prepare('INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)')
-      .bind(email, username, hashedPassword)
-      .run()
+    try {
+      const result = await db
+        .prepare('INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)')
+        .bind(email, username, hashedPassword)
+        .run()
 
-    if (!result.success) {
-      throw new Error('Failed to create user')
-    }
+      console.log('Insert result:', result)
 
-    const user = {
-      id: result.lastRowId,
-      email,
-      username
-    }
-
-    const token = await generateToken(user, JWT_SECRET)
-
-    return new Response(
-      JSON.stringify({ 
-        token, 
-        user,
-        message: 'Account created successfully' 
-      }), 
-      { 
-        status: 201,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
+      if (!result.success) {
+        throw new Error('Failed to create user: ' + JSON.stringify(result))
       }
-    )
+
+      const user = {
+        id: result.lastRowId,
+        email,
+        username
+      }
+
+      console.log('Generating token')
+      const token = await generateToken(user, JWT_SECRET)
+
+      return new Response(
+        JSON.stringify({ 
+          token, 
+          user,
+          message: 'Account created successfully' 
+        }), 
+        { 
+          status: 201,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      )
+    } catch (dbError) {
+      console.error('Database error during user creation:', dbError)
+      throw new Error('Database error during user creation: ' + dbError.message)
+    }
   } catch (error) {
     console.error('Registration error:', error)
     
     return new Response(
       JSON.stringify({ 
         message: 'Server error during registration',
-        details: error.message 
+        error: error.message,
+        stack: error.stack
       }), 
       { 
         status: 500,

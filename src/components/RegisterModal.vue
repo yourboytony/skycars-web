@@ -44,7 +44,8 @@
         </div>
 
         <div v-if="error" class="error-message">
-          {{ error }}
+          <p>Registration failed:</p>
+          <p>{{ error }}</p>
         </div>
 
         <button 
@@ -88,14 +89,17 @@ const handleSubmit = async () => {
   error.value = ''
   
   try {
+    console.log('Submitting registration form')
     await authStore.register(email.value, password.value, username.value)
+    console.log('Registration successful')
     username.value = ''
     email.value = ''
     password.value = ''
     loading.value = false
     $emit('close')
   } catch (err) {
-    error.value = err.message || 'Registration failed'
+    console.error('Registration error in component:', err)
+    error.value = err.message || 'Registration failed. Please try again.'
     loading.value = false
   }
 }
@@ -171,8 +175,16 @@ const handleSubmit = async () => {
 }
 
 .error-message {
-  color: #dc2626;
-  font-size: 0.875rem;
+  background: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #b91c1c;
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin: 1rem 0;
+}
+
+.error-message p {
+  margin: 0.25rem 0;
 }
 
 .switch-form {

@@ -8,10 +8,17 @@ pages_build_output_dir = "dist"
 [[d1_databases]]
 binding = "DB"
 database_name = "skycars-db"
-database_id = "f4e0aa03-d50a-450e-9bdd-09bb06112f69"
+database_id = "<f4e0aa03-d50a-450e-9bdd-09bb06112f69>"
 
 [site]
 bucket = "./dist"
 
 [vars]
 JWT_SECRET = "sk_5c4r5_53cr3t_k3y_2024"
+
+# Add local development settings
+[env.development]
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "skycars-db"
+database_id = "<your-database-id>"
