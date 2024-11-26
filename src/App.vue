@@ -68,19 +68,51 @@
         <p>&copy; {{ currentYear }} Skycars. All rights reserved.</p>
       </div>
     </footer>
+
+    <!-- Add modals -->
+    <LoginModal 
+      v-if="showLoginModal" 
+      @close="showLoginModal = false"
+      @switch="switchModal('register')"
+    />
+    
+    <RegisterModal
+      v-if="showRegisterModal"
+      @close="showRegisterModal = false"
+      @switch="switchModal('login')"
+    />
   </div>
 </template>
 
 <script>
+import LoginModal from './components/LoginModal.vue'
+import RegisterModal from './components/RegisterModal.vue'
+import { useAuthStore } from './stores/auth'
+
 export default {
   name: 'App',
+  components: {
+    LoginModal,
+    RegisterModal
+  },
+  
+  setup() {
+    const authStore = useAuthStore()
+    
+    return {
+      isLoggedIn: authStore.isAuthenticated,
+      currentUser: authStore.currentUser
+    }
+  },
+  
   data() {
     return {
       hasScrolled: false,
-      isLoggedIn: false,
       showUserMenu: false,
       userAvatar: '/default-avatar.png',
-      currentYear: new Date().getFullYear()
+      currentYear: new Date().getFullYear(),
+      showLoginModal: false,
+      showRegisterModal: false
     }
   },
   mounted() {
@@ -97,7 +129,16 @@ export default {
       this.showUserMenu = !this.showUserMenu
     },
     openModal(type) {
-      // Implement modal logic
+      if (type === 'login') {
+        this.showLoginModal = true
+        this.showRegisterModal = false
+      } else {
+        this.showRegisterModal = true
+        this.showLoginModal = false
+      }
+    },
+    switchModal(type) {
+      this.openModal(type)
     },
     logout() {
       // Implement logout logic
