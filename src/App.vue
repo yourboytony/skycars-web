@@ -4,7 +4,7 @@
     <nav class="nav" :class="{ 'nav-scrolled': hasScrolled }">
       <div class="nav-content">
         <router-link to="/" class="logo">
-          AviationTracker
+          Skycars
         </router-link>
         
         <div class="nav-links">
@@ -45,8 +45,8 @@
     <footer class="footer">
       <div class="footer-content">
         <div class="footer-section">
-          <h3>AviationTracker</h3>
-          <p>Your complete aviation tracking and planning solution.</p>
+          <h3>Skycars</h3>
+          <p>Your premium aviation experience.</p>
         </div>
         
         <div class="footer-section">
@@ -65,7 +65,7 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; {{ currentYear }} AviationTracker. All rights reserved.</p>
+        <p>&copy; {{ currentYear }} Skycars. All rights reserved.</p>
       </div>
     </footer>
   </div>

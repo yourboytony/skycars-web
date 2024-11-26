@@ -3,7 +3,7 @@
     <div class="about-header">
       <h1>About Us</h1>
       <p class="mission-statement">
-        Dedicated to providing the best aviation tracking and planning tools for the flight simulation community.
+        Skycars is dedicated to elevating your aviation experience with cutting-edge tracking and planning tools.
       </p>
     </div>
 
