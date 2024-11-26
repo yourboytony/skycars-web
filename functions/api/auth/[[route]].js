@@ -1,83 +1,89 @@
 import { D1Database } from '@cloudflare/workers-types'
-import { createHash } from 'crypto'
-import { sign } from 'jsonwebtoken'
-
-const JWT_SECRET = 'your-secret-key' // Replace with environment variable
 
 export async function onRequest(context) {
   const { request, env } = context
+  const JWT_SECRET = env.JWT_SECRET // Get secret from environment
+  
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/auth/', '')
 
   switch (path) {
     case 'login':
-      return handleLogin(request, env.DB)
+      return handleLogin(request, env.DB, JWT_SECRET)
     case 'register':
-      return handleRegister(request, env.DB)
+      return handleRegister(request, env.DB, JWT_SECRET)
     default:
       return new Response('Not found', { status: 404 })
   }
 }
 
-async function handleLogin(request, db) {
+async function handleLogin(request, db, JWT_SECRET) {
   const { email, password } = await request.json()
   
   try {
-    const hashedPassword = hashPassword(password)
+    const hashedPassword = await hashPassword(password)
     
-    const user = await db.prepare(
+    const stmt = db.prepare(
       'SELECT id, username, email FROM users WHERE email = ? AND password_hash = ?'
     )
-    .bind(email, hashedPassword)
-    .first()
+    const user = await stmt.bind(email, hashedPassword).first()
 
     if (!user) {
       return new Response(
         JSON.stringify({ message: 'Invalid credentials' }), 
-        { status: 401 }
+        { 
+          status: 401,
+          headers: { 'Content-Type': 'application/json' }
+        }
       )
     }
 
-    const token = generateToken(user)
+    const token = await generateToken(user, JWT_SECRET)
 
     return new Response(
       JSON.stringify({ token, user }), 
-      { status: 200 }
+      { 
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
+      }
     )
   } catch (error) {
     return new Response(
       JSON.stringify({ message: 'Server error' }), 
-      { status: 500 }
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     )
   }
 }
 
-async function handleRegister(request, db) {
+async function handleRegister(request, db, JWT_SECRET) {
   const { email, password, username } = await request.json()
   
   try {
     // Check if user exists
-    const existingUser = await db.prepare(
+    const stmt = db.prepare(
       'SELECT id FROM users WHERE email = ? OR username = ?'
     )
-    .bind(email, username)
-    .first()
+    const existingUser = await stmt.bind(email, username).first()
 
     if (existingUser) {
       return new Response(
         JSON.stringify({ message: 'User already exists' }), 
-        { status: 400 }
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       )
     }
 
-    const hashedPassword = hashPassword(password)
+    const hashedPassword = await hashPassword(password)
     
     // Insert new user
     const result = await db.prepare(
       'INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)'
-    )
-    .bind(email, username, hashedPassword)
-    .run()
+    ).bind(email, username, hashedPassword).run()
 
     const user = {
       id: result.lastRowId,
@@ -85,28 +91,61 @@ async function handleRegister(request, db) {
       username
     }
 
-    const token = generateToken(user)
+    const token = await generateToken(user, JWT_SECRET)
 
     return new Response(
       JSON.stringify({ token, user }), 
-      { status: 201 }
+      { 
+        status: 201,
+        headers: { 'Content-Type': 'application/json' }
+      }
     )
   } catch (error) {
     return new Response(
       JSON.stringify({ message: 'Server error' }), 
-      { status: 500 }
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     )
   }
 }
 
-function hashPassword(password) {
-  return createHash('sha256').update(password).digest('hex')
+// Use Web Crypto API for password hashing
+async function hashPassword(password) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(password)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return bufferToHex(hash)
 }
 
-function generateToken(user) {
-  return sign(
-    { userId: user.id, email: user.email },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  )
+// Helper function to convert buffer to hex string
+function bufferToHex(buffer) {
+  return Array.from(new Uint8Array(buffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('')
+}
+
+// Simple token generation (in production, use a proper JWT implementation)
+async function generateToken(user, JWT_SECRET) {
+  const header = { alg: 'HS256', typ: 'JWT' }
+  const payload = {
+    userId: user.id,
+    email: user.email,
+    exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60) // 7 days
+  }
+
+  const encodedHeader = btoa(JSON.stringify(header))
+  const encodedPayload = btoa(JSON.stringify(payload))
+  
+  const signature = await generateSignature(`${encodedHeader}.${encodedPayload}`, JWT_SECRET)
+  
+  return `${encodedHeader}.${encodedPayload}.${signature}`
+}
+
+async function generateSignature(input, JWT_SECRET) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(input + JWT_SECRET)
+  const hash = await crypto.subtle.digest('SHA-256', data)
+  return bufferToHex(hash)
 } 

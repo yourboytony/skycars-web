@@ -8,3 +8,6 @@ database_id = "YOUR_DB_ID"
 
 [site]
 bucket = "./dist" 
+
+[vars]
+JWT_SECRET = "sk_5c4r5_53cr3t_k3y_2024"
