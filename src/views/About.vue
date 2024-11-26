@@ -13,7 +13,7 @@
       <div class="team-grid">
         <div class="team-member">
           <div class="member-photo">
-            <img src="../assets/sean-davis.jpg" alt="Sean Davis" />
+            <div class="placeholder-image">SD</div>
           </div>
           <h3>Sean Davis</h3>
           <p class="member-title">Founder</p>
@@ -24,7 +24,7 @@
 
         <div class="team-member">
           <div class="member-photo">
-            <img src="../assets/anthony-nigro.jpg" alt="Anthony Nigro" />
+            <div class="placeholder-image">AN</div>
           </div>
           <h3>Anthony Nigro</h3>
           <p class="member-title">Founder</p>
@@ -35,7 +35,7 @@
 
         <div class="team-member">
           <div class="member-photo">
-            <img src="../assets/spencer-parkinson.jpg" alt="Spencer Parkinson" />
+            <div class="placeholder-image">SP</div>
           </div>
           <h3>Spencer Parkinson</h3>
           <p class="member-title">Instructor</p>
@@ -121,10 +121,16 @@ export default {
   overflow: hidden;
 }
 
-.member-photo img {
+.placeholder-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 .member-title {
