@@ -15,7 +15,6 @@
             v-model="username" 
             required
             :disabled="loading"
-            @input="error = ''"
           >
         </div>
 
@@ -27,7 +26,6 @@
             v-model="email" 
             required
             :disabled="loading"
-            @input="error = ''"
           >
         </div>
 
@@ -39,26 +37,24 @@
             v-model="password" 
             required
             :disabled="loading"
-            @input="error = ''"
           >
         </div>
 
         <div v-if="error" class="error-message">
-          <p>Registration failed:</p>
-          <p>{{ error }}</p>
+          {{ error }}
         </div>
 
         <button 
           type="submit" 
           class="submit-btn" 
-          :disabled="loading || !isValid"
+          :disabled="loading"
         >
-          {{ loading ? 'Creating account...' : 'Register' }}
+          {{ loading ? 'Creating Account...' : 'Register' }}
         </button>
 
         <p class="switch-form">
           Already have an account? 
-          <a href="#" @click.prevent="$emit('switch', 'login')">Login</a>
+          <a href="#" @click.prevent="$emit('switch')">Login</a>
         </p>
       </form>
     </div>
@@ -66,40 +62,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
+const emit = defineEmits(['close', 'switch'])
 const authStore = useAuthStore()
+
 const username = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
-const isValid = computed(() => {
-  return username.value.length >= 3 && 
-         email.value.includes('@') && 
-         password.value.length >= 6
-})
-
 const handleSubmit = async () => {
-  if (!isValid.value) return
-  
   loading.value = true
   error.value = ''
   
   try {
-    console.log('Submitting registration form')
     await authStore.register(email.value, password.value, username.value)
-    console.log('Registration successful')
     username.value = ''
     email.value = ''
     password.value = ''
     loading.value = false
-    $emit('close')
+    emit('close')
   } catch (err) {
-    console.error('Registration error in component:', err)
-    error.value = err.message || 'Registration failed. Please try again.'
+    error.value = err.message
     loading.value = false
   }
 }
@@ -125,7 +112,6 @@ const handleSubmit = async () => {
   border-radius: 8px;
   width: 100%;
   max-width: 400px;
-  position: relative;
 }
 
 .modal-header {
@@ -140,6 +126,7 @@ const handleSubmit = async () => {
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
+  color: #666;
 }
 
 .auth-form {
@@ -154,9 +141,13 @@ const handleSubmit = async () => {
   gap: 0.5rem;
 }
 
+.form-group label {
+  font-weight: 500;
+}
+
 .form-group input {
   padding: 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid #ddd;
   border-radius: 4px;
 }
 
@@ -167,6 +158,7 @@ const handleSubmit = async () => {
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .submit-btn:disabled {
@@ -175,16 +167,11 @@ const handleSubmit = async () => {
 }
 
 .error-message {
+  color: #dc2626;
   background: #fee2e2;
-  border: 1px solid #ef4444;
-  color: #b91c1c;
   padding: 0.75rem;
   border-radius: 4px;
-  margin: 1rem 0;
-}
-
-.error-message p {
-  margin: 0.25rem 0;
+  font-size: 0.875rem;
 }
 
 .switch-form {
@@ -195,5 +182,6 @@ const handleSubmit = async () => {
 .switch-form a {
   color: var(--primary-color);
   text-decoration: none;
+  font-weight: 500;
 }
 </style> 
