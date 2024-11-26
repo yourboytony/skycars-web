@@ -1,27 +1,53 @@
 export async function onRequest(context) {
   const { request, env } = context
-  const JWT_SECRET = env.JWT_SECRET
   
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      },
+    })
+  }
+
   const url = new URL(request.url)
   const path = url.pathname.replace('/api/auth/', '')
 
   try {
     switch (path) {
       case 'login':
-        return handleLogin(request, env.DB, JWT_SECRET)
+        return handleLogin(request, env.DB, env.JWT_SECRET)
       case 'register':
-        return handleRegister(request, env.DB, JWT_SECRET)
+        return handleRegister(request, env.DB, env.JWT_SECRET)
       default:
-        return new Response('Not found', { 
-          status: 404,
-          headers: { 'Content-Type': 'application/json' }
-        })
+        return new Response(
+          JSON.stringify({ message: 'Not found' }), 
+          { 
+            status: 404,
+            headers: { 
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            }
+          }
+        )
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Server error' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+    console.error('Auth error:', error)
+    return new Response(
+      JSON.stringify({ 
+        message: 'Server error',
+        details: error.message 
+      }), 
+      {
+        status: 500,
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
+      }
+    )
   }
 }
 
@@ -69,21 +95,42 @@ async function handleLogin(request, db, JWT_SECRET) {
 }
 
 async function handleRegister(request, db, JWT_SECRET) {
-  const { email, password, username } = await request.json()
-  
   try {
-    // Check if user exists
-    const { results } = await db
-      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
-      .bind(email, username)
-      .all()
-
-    if (results?.length > 0) {
+    const { email, password, username } = await request.json()
+    
+    // Validate input
+    if (!email || !password || !username) {
       return new Response(
-        JSON.stringify({ message: 'User already exists' }), 
+        JSON.stringify({ 
+          message: 'Email, password, and username are required' 
+        }), 
         { 
           status: 400,
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
+        }
+      )
+    }
+
+    // Check if user exists
+    const existingUser = await db
+      .prepare('SELECT id FROM users WHERE email = ? OR username = ?')
+      .bind(email, username)
+      .first()
+
+    if (existingUser) {
+      return new Response(
+        JSON.stringify({ 
+          message: 'Email or username already exists' 
+        }), 
+        { 
+          status: 400,
+          headers: { 
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          }
         }
       )
     }
@@ -96,6 +143,10 @@ async function handleRegister(request, db, JWT_SECRET) {
       .bind(email, username, hashedPassword)
       .run()
 
+    if (!result.success) {
+      throw new Error('Failed to create user')
+    }
+
     const user = {
       id: result.lastRowId,
       email,
@@ -105,18 +156,33 @@ async function handleRegister(request, db, JWT_SECRET) {
     const token = await generateToken(user, JWT_SECRET)
 
     return new Response(
-      JSON.stringify({ token, user }), 
+      JSON.stringify({ 
+        token, 
+        user,
+        message: 'Account created successfully' 
+      }), 
       { 
         status: 201,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       }
     )
   } catch (error) {
+    console.error('Registration error:', error)
+    
     return new Response(
-      JSON.stringify({ message: 'Server error' }), 
+      JSON.stringify({ 
+        message: 'Server error during registration',
+        details: error.message 
+      }), 
       { 
         status: 500,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       }
     )
   }

@@ -15,6 +15,7 @@
             v-model="username" 
             required
             :disabled="loading"
+            @input="error = ''"
           >
         </div>
 
@@ -26,6 +27,7 @@
             v-model="email" 
             required
             :disabled="loading"
+            @input="error = ''"
           >
         </div>
 
@@ -37,6 +39,7 @@
             v-model="password" 
             required
             :disabled="loading"
+            @input="error = ''"
           >
         </div>
 
@@ -47,7 +50,7 @@
         <button 
           type="submit" 
           class="submit-btn" 
-          :disabled="loading"
+          :disabled="loading || !isValid"
         >
           {{ loading ? 'Creating account...' : 'Register' }}
         </button>
@@ -61,46 +64,39 @@
   </div>
 </template>
 
-<script>
-import { ref } from 'vue'
+<script setup>
+import { ref, computed } from 'vue'
 import { useAuthStore } from '../stores/auth'
 
-export default {
-  name: 'RegisterModal',
-  emits: ['close', 'switch'],
+const authStore = useAuthStore()
+const username = ref('')
+const email = ref('')
+const password = ref('')
+const error = ref('')
+const loading = ref(false)
+
+const isValid = computed(() => {
+  return username.value.length >= 3 && 
+         email.value.includes('@') && 
+         password.value.length >= 6
+})
+
+const handleSubmit = async () => {
+  if (!isValid.value) return
   
-  setup() {
-    const authStore = useAuthStore()
-    const username = ref('')
-    const email = ref('')
-    const password = ref('')
-    const error = ref('')
-    const loading = ref(false)
-
-    const handleSubmit = async () => {
-      loading.value = true
-      error.value = ''
-      
-      try {
-        await authStore.register(email.value, password.value, username.value)
-        username.value = ''
-        email.value = ''
-        password.value = ''
-      } catch (err) {
-        error.value = err.message
-      } finally {
-        loading.value = false
-      }
-    }
-
-    return {
-      username,
-      email,
-      password,
-      error,
-      loading,
-      handleSubmit
-    }
+  loading.value = true
+  error.value = ''
+  
+  try {
+    await authStore.register(email.value, password.value, username.value)
+    username.value = ''
+    email.value = ''
+    password.value = ''
+    loading.value = false
+    $emit('close')
+  } catch (err) {
+    error.value = err.message || 'Registration failed'
+    loading.value = false
   }
 }
 </script>

@@ -5,6 +5,11 @@ compatibility_date = "2024-01-01"
 command = "npm run build"
 pages_build_output_dir = "dist"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "skycars-db"
+database_id = "f4e0aa03-d50a-450e-9bdd-09bb06112f69"
+
 [site]
 bucket = "./dist"
 
