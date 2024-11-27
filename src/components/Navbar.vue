@@ -86,25 +86,26 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   z-index: 1000;
-  padding: 1rem 0;
-  transition: all 0.3s ease;
+  background: var(--background-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.5rem 2rem;
+  height: 70px;
+  display: flex;
+  align-items: center;
 }
 
 .nav-container {
+  width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-radius: 1rem;
-  margin: 1rem 2rem;
 }
 
-.navbar.scrolled .nav-container {
-  background: rgba(var(--background-primary-rgb), 0.8);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+.nav-brand {
+  display: flex;
+  align-items: center;
 }
 
 .logo {
@@ -114,11 +115,6 @@ onUnmounted(() => {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary-color);
-  text-decoration: none;
-}
-
-.logo i {
-  font-size: 1.8rem;
 }
 
 .nav-menu {
@@ -138,24 +134,14 @@ onUnmounted(() => {
   gap: 0.5rem;
   padding: 0.5rem 1rem;
   color: var(--text-color);
-  text-decoration: none;
   font-weight: 500;
   transition: all 0.3s ease;
   border-radius: 0.5rem;
 }
 
-.nav-link i {
-  font-size: 1.2rem;
-  transition: transform 0.3s ease;
-}
-
 .nav-link:hover {
   color: var(--primary-color);
   background: var(--background-hover);
-}
-
-.nav-link:hover i {
-  transform: translateY(-2px);
 }
 
 .nav-auth {
@@ -172,7 +158,6 @@ onUnmounted(() => {
   border-radius: 0.5rem;
   font-weight: 600;
   transition: all 0.3s ease;
-  cursor: pointer;
 }
 
 .btn-login {
@@ -187,12 +172,6 @@ onUnmounted(() => {
   color: white;
 }
 
-.btn-login:hover,
-.btn-register:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
-}
-
 .mobile-toggle {
   display: none;
 }
@@ -202,51 +181,20 @@ onUnmounted(() => {
     display: block;
     background: none;
     border: none;
-    cursor: pointer;
     padding: 0.5rem;
-  }
-
-  .hamburger {
-    width: 24px;
-    height: 20px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .hamburger span {
-    display: block;
-    width: 100%;
-    height: 2px;
-    background: var(--text-color);
-    transition: all 0.3s ease;
-  }
-
-  .hamburger.active span:nth-child(1) {
-    transform: translateY(9px) rotate(45deg);
-  }
-
-  .hamburger.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .hamburger.active span:nth-child(3) {
-    transform: translateY(-9px) rotate(-45deg);
   }
 
   .nav-menu {
     position: fixed;
-    top: 0;
+    top: 70px; /* Navbar height */
     left: 0;
     right: 0;
     bottom: 0;
     background: var(--background-primary);
     flex-direction: column;
-    padding: 6rem 2rem 2rem;
+    padding: 2rem;
     transform: translateX(100%);
-    transition: all 0.3s ease;
-    overflow-y: auto;
+    transition: transform 0.3s ease;
   }
 
   .nav-menu.active {
@@ -256,17 +204,17 @@ onUnmounted(() => {
   .nav-links {
     flex-direction: column;
     align-items: center;
-    gap: 2rem;
+    width: 100%;
   }
 
   .nav-link {
-    font-size: 1.2rem;
+    width: 100%;
+    justify-content: center;
   }
 
   .nav-auth {
     flex-direction: column;
     width: 100%;
-    gap: 1rem;
   }
 
   .btn-login,

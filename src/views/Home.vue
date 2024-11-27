@@ -257,12 +257,13 @@ onMounted(() => {
 /* Hero Section */
 .hero {
   position: relative;
-  min-height: 100vh;
+  min-height: calc(100vh - 70px);
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  padding: 2rem;
+  padding: 4rem 2rem;
+  margin-top: 70px;
 }
 
 .stars-container {
@@ -289,10 +290,11 @@ onMounted(() => {
 .stars3 { animation: move-stars 100s linear infinite; opacity: 0.3; }
 
 .hero-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
   position: relative;
   z-index: 2;
-  max-width: 800px;
-  text-align: center;
   padding: 3rem;
   border-radius: 1rem;
 }
@@ -545,20 +547,27 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
+  .hero {
+    padding: 2rem 1rem;
+  }
+
+  .hero-content {
+    padding: 2rem 1rem;
+  }
+
   .animated-title {
     font-size: 2.5rem;
   }
-  
-  .hero-subtitle {
-    font-size: 1.25rem;
-  }
-  
-  .hero-cta {
-    flex-direction: column;
-  }
-  
-  .live-data {
+
+  .features-grid,
+  .data-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .live-data {
+    margin: 1rem;
+    padding: 2rem 1rem;
   }
 }
 </style> 

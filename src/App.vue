@@ -111,23 +111,37 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
 }
 
 .app {
   min-height: 100vh;
-  opacity: 0;
-  transition: opacity 0.5s ease-out;
-}
-
-.app.loaded {
-  opacity: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 main {
-  padding-top: 80px; /* Adjust based on navbar height */
+  flex: 1;
+  padding-top: 70px; /* Match navbar height */
+  width: 100%;
 }
 
-/* Glass effect */
+/* Update container widths */
+.container {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Update section padding */
+section {
+  padding: 4rem 2rem;
+}
+
+/* Glass effect update */
 .glass {
   background: rgba(var(--background-primary-rgb), 0.8);
   backdrop-filter: blur(10px);
@@ -135,43 +149,56 @@ main {
   box-shadow: 0 8px 32px var(--shadow-color);
 }
 
-.dark .glass {
-  background: rgba(var(--background-primary-rgb), 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+/* Add responsive container classes */
+.container-sm { max-width: 640px; }
+.container-md { max-width: 768px; }
+.container-lg { max-width: 1024px; }
+.container-xl { max-width: 1280px; }
+.container-2xl { max-width: 1400px; }
+
+/* Add spacing utilities */
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-8 { padding-left: 2rem; padding-right: 2rem; }
+.m-auto { margin: 0 auto; }
+
+/* Add flex utilities */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.gap-4 { gap: 1rem; }
+.gap-8 { gap: 2rem; }
+
+/* Add grid utilities */
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 1024px) {
+  .container {
+    padding: 0 1rem;
+  }
+  
+  section {
+    padding: 3rem 1rem;
+  }
 }
 
-/* Smooth scrolling */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Modern scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--background-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--primary-color);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--primary-dark);
-}
-
-/* Button reset */
-button {
-  font-family: inherit;
-  cursor: pointer;
-}
-
-/* Link reset */
-a {
-  text-decoration: none;
-  color: inherit;
+@media (max-width: 768px) {
+  section {
+    padding: 2rem 1rem;
+  }
+  
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
 }
 </style> 
