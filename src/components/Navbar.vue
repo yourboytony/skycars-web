@@ -5,41 +5,44 @@
     </router-link>
 
     <div class="nav-links" :class="{ 'active': isMenuOpen }">
-      <router-link to="/features">Features</router-link>
-      <router-link to="/pricing">Pricing</router-link>
-      <router-link to="/support">Support</router-link>
-      <router-link to="/contact">Contact</router-link>
+      <template v-if="!auth.isAuthenticated()">
+        <router-link to="/features">Features</router-link>
+        <router-link to="/pricing">Pricing</router-link>
+        <router-link to="/support">Support</router-link>
+        <router-link to="/contact">Contact</router-link>
+      </template>
+      <template v-else>
+        <router-link to="/dashboard">Dashboard</router-link>
+        <router-link to="/listings">My Listings</router-link>
+        <router-link to="/messages">Messages</router-link>
+      </template>
     </div>
 
     <div class="auth-buttons" :class="{ 'active': isMenuOpen }">
-      <router-link 
-        v-if="!auth.isAuthenticated()" 
-        to="/login" 
-        class="login-btn"
-      >
-        Log In
-      </router-link>
-      <router-link 
-        v-if="!auth.isAuthenticated()" 
-        to="/register" 
-        class="register-btn"
-      >
-        Get Started
-      </router-link>
-      <router-link 
-        v-if="auth.isAuthenticated()" 
-        to="/dashboard" 
-        class="dashboard-btn"
-      >
-        Dashboard
-      </router-link>
-      <button 
-        v-if="auth.isAuthenticated()" 
-        @click="handleLogout" 
-        class="logout-btn"
-      >
-        Log Out
-      </button>
+      <template v-if="!auth.isAuthenticated()">
+        <router-link to="/login" class="login-btn">Log In</router-link>
+        <router-link to="/register" class="register-btn">Get Started</router-link>
+      </template>
+      <template v-else>
+        <div class="user-menu" ref="userMenuRef">
+          <button class="user-btn" @click="toggleUserMenu">
+            <span>{{ auth.user?.name }}</span>
+            <i class="fas fa-chevron-down"></i>
+          </button>
+          <div class="user-dropdown" v-if="isUserMenuOpen">
+            <router-link to="/profile" class="dropdown-item">
+              <i class="fas fa-user"></i> Profile
+            </router-link>
+            <router-link to="/settings" class="dropdown-item">
+              <i class="fas fa-cog"></i> Settings
+            </router-link>
+            <div class="dropdown-divider"></div>
+            <button @click="handleLogout" class="dropdown-item logout">
+              <i class="fas fa-sign-out-alt"></i> Log Out
+            </button>
+          </div>
+        </div>
+      </template>
     </div>
 
     <button class="menu-btn" @click="toggleMenu">
@@ -49,22 +52,44 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
 const isMenuOpen = ref(false)
+const isUserMenuOpen = ref(false)
+const userMenuRef = ref(null)
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
 }
 
-const handleLogout = () => {
-  auth.logout()
+const toggleUserMenu = () => {
+  isUserMenuOpen.value = !isUserMenuOpen.value
+}
+
+const handleLogout = async () => {
+  await auth.logout()
+  isUserMenuOpen.value = false
   router.push('/')
 }
+
+// Close user menu when clicking outside
+const handleClickOutside = (event) => {
+  if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
+    isUserMenuOpen.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
 </script>
 
 <style scoped>
@@ -163,6 +188,74 @@ const handleLogout = () => {
   cursor: pointer;
 }
 
+.user-menu {
+  position: relative;
+}
+
+.user-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.user-btn i {
+  font-size: 0.875rem;
+  transition: transform 0.2s;
+}
+
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  margin-top: 0.5rem;
+  background: var(--background-secondary);
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background: var(--background-hover);
+}
+
+.dropdown-item i {
+  width: 1rem;
+  text-align: center;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+.logout {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  color: #ef4444;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
 @media (max-width: 768px) {
   .navbar {
     padding: 1rem;
@@ -209,6 +302,13 @@ const handleLogout = () => {
     width: 100%;
     text-align: center;
     margin: 0.25rem 0;
+  }
+
+  .user-dropdown {
+    position: static;
+    width: 100%;
+    margin-top: 0;
+    box-shadow: none;
   }
 }
 </style> 
