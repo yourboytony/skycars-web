@@ -73,8 +73,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 const showPassword = ref(false)
 const isLoading = ref(false)
 
@@ -97,22 +99,36 @@ const handleLogin = async () => {
   try {
     isLoading.value = true
     
-    // Add your authentication logic here
-    // Example:
-    // const response = await authService.login(formData)
-    // localStorage.setItem('token', response.token)
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: formData.email,
+        password: formData.password
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Login failed')
+    }
+
+    // Store token and user data
+    auth.setToken(data.token)
+    auth.setUser(data.user)
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Store token (replace with your actual token)
-    localStorage.setItem('user-token', 'dummy-token')
-    
+    if (formData.remember) {
+      localStorage.setItem('remember-token', data.token)
+    }
+
     // Redirect to dashboard
     router.push('/dashboard')
   } catch (error) {
     console.error('Login error:', error)
-    errors.email = 'Invalid email or password'
+    errors.email = error.message || 'Invalid email or password'
   } finally {
     isLoading.value = false
   }

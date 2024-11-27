@@ -89,8 +89,10 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const auth = useAuthStore()
 const showPassword = ref(false)
 const isLoading = ref(false)
 
@@ -107,37 +109,73 @@ const errors = reactive({
   password: ''
 })
 
-const handleRegister = async () => {
+const validateForm = () => {
+  let isValid = true
+  
   // Reset errors
   errors.name = ''
   errors.email = ''
   errors.password = ''
 
+  // Validate name
+  if (formData.name.length < 2) {
+    errors.name = 'Name must be at least 2 characters'
+    isValid = false
+  }
+
+  // Validate email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(formData.email)) {
+    errors.email = 'Please enter a valid email'
+    isValid = false
+  }
+
   // Validate password
   if (formData.password.length < 8) {
     errors.password = 'Password must be at least 8 characters'
-    return
+    isValid = false
   }
+
+  return isValid
+}
+
+const handleRegister = async () => {
+  if (!validateForm()) return
 
   try {
     isLoading.value = true
     
-    // Add your registration logic here
-    // Example:
-    // const response = await authService.register(formData)
-    // localStorage.setItem('token', response.token)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Store token (replace with your actual token)
-    localStorage.setItem('user-token', 'dummy-token')
-    
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Registration failed')
+    }
+
+    // Store token and user data
+    auth.setToken(data.token)
+    auth.setUser(data.user)
+
     // Redirect to dashboard
     router.push('/dashboard')
   } catch (error) {
     console.error('Registration error:', error)
-    errors.email = 'Email already in use'
+    if (error.message.includes('already in use')) {
+      errors.email = 'Email already in use'
+    } else {
+      errors.email = error.message || 'Registration failed'
+    }
   } finally {
     isLoading.value = false
   }
