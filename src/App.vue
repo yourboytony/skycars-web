@@ -21,6 +21,7 @@
           <span class="username">{{ authStore.currentUser?.username }}</span>
           <button @click="handleLogout" class="btn-logout">Logout</button>
         </div>
+        <ThemeToggle class="theme-toggle-position" />
       </div>
     </nav>
 
@@ -44,17 +45,20 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
+import { useThemeStore } from './stores/theme'
 import LoginModal from './components/LoginModal.vue'
 import RegisterModal from './components/RegisterModal.vue'
 import LoadingScreen from './components/LoadingScreen.vue'
+import ThemeToggle from './components/ThemeToggle.vue'
 
 const authStore = useAuthStore()
 const showLoginModal = ref(false)
 const showRegisterModal = ref(false)
 const isLoading = ref(true)
+const themeStore = useThemeStore()
 
 onMounted(() => {
-  // Simulate initial loading
+  themeStore.initTheme()
   setTimeout(() => {
     isLoading.value = false
   }, 2500)
@@ -72,13 +76,88 @@ const handleLogout = () => {
 
 <style>
 :root {
+  /* Light theme variables */
   --primary-color: #3b82f6;
   --primary-dark: #1e3a8a;
   --secondary-color: #10b981;
   --accent-color: #f59e0b;
   --text-color: #1f2937;
-  --background-light: #f8fafc;
-  --background-dark: #1f2937;
+  --background-primary: #ffffff;
+  --background-secondary: #f8fafc;
+  --background-hover: rgba(0, 0, 0, 0.05);
+  --border-color: #e5e7eb;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+:root.dark {
+  /* Dark theme variables */
+  --primary-color: #60a5fa;
+  --primary-dark: #3b82f6;
+  --secondary-color: #34d399;
+  --accent-color: #fbbf24;
+  --text-color: #f3f4f6;
+  --background-primary: #111827;
+  --background-secondary: #1f2937;
+  --background-hover: rgba(255, 255, 255, 0.05);
+  --border-color: #374151;
+  --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background-color: var(--background-primary);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Glass effect variations */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px var(--shadow-color);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Card styles */
+.card {
+  background: var(--background-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.dark .card {
+  background: var(--background-secondary);
+}
+
+/* Button styles */
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.dark .btn-secondary {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Theme toggle position */
+.theme-toggle-position {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 100;
 }
 
 .app {
@@ -88,14 +167,6 @@ const handleLogout = () => {
 
 .app.loaded {
   opacity: 1;
-}
-
-/* Add glass morphism effects */
-.glass {
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
 /* Add smooth scrolling */

@@ -117,14 +117,17 @@ export default {
 }
 
 .hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-              url('/images/hero-bg.jpg') center/cover;
+  background: var(--background-primary);
   height: 80vh;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   color: white;
+}
+
+.dark .hero {
+  background: var(--background-secondary);
 }
 
 .hero-content {
@@ -185,9 +188,20 @@ export default {
 
 .feature-card {
   padding: 2rem;
-  background: white;
+  background: var(--background-primary);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.dark .feature-card {
+  background: var(--background-secondary);
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px var(--shadow-color);
 }
 
 .feature-card i {
@@ -217,15 +231,23 @@ export default {
   text-align: center;
 }
 
+.dark .stats {
+  background: var(--primary-dark);
+}
+
 .stat-item h3 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
 }
 
 .footer {
-  background: #1f2937;
+  background: var(--background-secondary);
   color: white;
   padding: 4rem 2rem 1rem;
+}
+
+.dark .footer {
+  background: var(--background-primary);
 }
 
 .footer-content {
