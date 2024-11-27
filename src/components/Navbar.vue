@@ -1,53 +1,37 @@
 <template>
-  <nav class="navbar" :class="{ 'scrolled': isScrolled, 'mobile-open': isMobileMenuOpen }">
-    <div class="nav-container glass">
+  <nav class="navbar" :class="{ 'scrolled': isScrolled }">
+    <div class="nav-container">
       <div class="nav-brand">
         <router-link to="/" class="logo">
-          <i class="fas fa-plane-departure"></i>
-          <span>SKYCARS</span>
+          <div class="logo-icon">
+            <i class="fas fa-plane-departure"></i>
+            <div class="logo-glow"></div>
+          </div>
+          <span class="logo-text">SKYCARS</span>
         </router-link>
       </div>
 
-      <button class="mobile-toggle" @click="toggleMobileMenu">
-        <div class="hamburger" :class="{ 'active': isMobileMenuOpen }">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-
-      <div class="nav-menu" :class="{ 'active': isMobileMenuOpen }">
+      <div class="nav-menu">
         <div class="nav-links">
-          <router-link to="/radar" class="nav-link">
-            <i class="fas fa-radar"></i>
-            <span>Radar</span>
-          </router-link>
-          <router-link to="/planning" class="nav-link">
-            <i class="fas fa-map-marked-alt"></i>
-            <span>Planning</span>
-          </router-link>
-          <router-link to="/weather" class="nav-link">
-            <i class="fas fa-cloud-sun"></i>
-            <span>Weather</span>
-          </router-link>
-          <router-link to="/forum" class="nav-link">
-            <i class="fas fa-comments"></i>
-            <span>Forum</span>
-          </router-link>
-          <router-link to="/about" class="nav-link">
-            <i class="fas fa-info-circle"></i>
-            <span>About</span>
+          <router-link v-for="link in navLinks" 
+            :key="link.path" 
+            :to="link.path" 
+            class="nav-link hover-effect"
+          >
+            <i :class="link.icon"></i>
+            <span>{{ link.name }}</span>
+            <div class="link-highlight"></div>
           </router-link>
         </div>
 
         <div class="nav-auth">
-          <button @click="$emit('showLogin')" class="btn-login">
-            <i class="fas fa-sign-in-alt"></i>
+          <button @click="$emit('showLogin')" class="btn-login glow-effect">
             <span>Login</span>
+            <div class="glow"></div>
           </button>
-          <button @click="$emit('showRegister')" class="btn-register">
-            <i class="fas fa-user-plus"></i>
-            <span>Register</span>
+          <button @click="$emit('showRegister')" class="btn-register pulse-effect">
+            <span>Get Started</span>
+            <i class="fas fa-arrow-right"></i>
           </button>
         </div>
       </div>
@@ -81,146 +65,136 @@ onUnmounted(() => {
 
 <style scoped>
 .navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  background: var(--background-primary);
-  border-bottom: 1px solid var(--border-color);
-  padding: 0.5rem 2rem;
-  height: 70px;
-  display: flex;
-  align-items: center;
+  background: rgba(var(--background-primary-rgb), 0.8);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-container {
-  width: 100%;
-  max-width: 1400px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.nav-brand {
-  display: flex;
-  align-items: center;
+.navbar.scrolled {
+  background: rgba(var(--background-primary-rgb), 0.95);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.logo-icon {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  overflow: hidden;
+}
+
+.logo-icon i {
+  color: white;
   font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
+  z-index: 1;
 }
 
-.nav-menu {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
+.logo-glow {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-color);
+  filter: blur(20px);
+  opacity: 0.5;
+  animation: pulse 2s ease-in-out infinite;
 }
 
-.nav-links {
-  display: flex;
-  gap: 1.5rem;
+.logo-text {
+  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
 .nav-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  color: var(--text-color);
-  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.link-highlight {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(to right, var(--primary-color), var(--accent-color));
   transition: all 0.3s ease;
-  border-radius: 0.5rem;
+  transform: translateX(-50%);
 }
 
-.nav-link:hover {
-  color: var(--primary-color);
-  background: var(--background-hover);
-}
-
-.nav-auth {
-  display: flex;
-  gap: 1rem;
-}
-
-.btn-login,
-.btn-register {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
-  font-weight: 600;
-  transition: all 0.3s ease;
+.nav-link:hover .link-highlight {
+  width: 100%;
 }
 
 .btn-login {
+  position: relative;
+  overflow: hidden;
   background: transparent;
   border: 2px solid var(--primary-color);
   color: var(--primary-color);
 }
 
+.glow {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(var(--primary-rgb), 0.2),
+    transparent
+  );
+  transform: translateX(-100%);
+}
+
+.btn-login:hover .glow {
+  animation: glow-effect 1.5s infinite;
+}
+
 .btn-register {
-  background: var(--primary-color);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   border: none;
   color: white;
+  transform-origin: center;
 }
 
-.mobile-toggle {
-  display: none;
+.btn-register:hover {
+  animation: pulse 1.5s infinite;
 }
 
-@media (max-width: 1024px) {
-  .mobile-toggle {
-    display: block;
-    background: none;
-    border: none;
-    padding: 0.5rem;
-  }
-
-  .nav-menu {
-    position: fixed;
-    top: 70px; /* Navbar height */
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--background-primary);
-    flex-direction: column;
-    padding: 2rem;
+@keyframes glow-effect {
+  100% {
     transform: translateX(100%);
-    transition: transform 0.3s ease;
-  }
-
-  .nav-menu.active {
-    transform: translateX(0);
-  }
-
-  .nav-links {
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  .nav-link {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .nav-auth {
-    flex-direction: column;
-    width: 100%;
-  }
-
-  .btn-login,
-  .btn-register {
-    width: 100%;
-    justify-content: center;
   }
 }
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(var(--primary-rgb), 0);
+  }
+}
+
+/* Add responsive styles here */
 </style> 
