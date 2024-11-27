@@ -36,6 +36,10 @@
           <span class="error-message">{{ errors.password }}</span>
         </div>
 
+        <div v-if="globalError" class="global-error">
+          {{ globalError }}
+        </div>
+
         <button 
           type="submit" 
           class="submit-button"
@@ -62,6 +66,7 @@ const router = useRouter()
 const auth = useAuthStore()
 const showPassword = ref(false)
 const isLoading = ref(false)
+const globalError = ref('')
 
 const formData = reactive({
   email: '',
@@ -74,16 +79,21 @@ const errors = reactive({
 })
 
 const handleLogin = async () => {
-  // Reset errors
-  errors.email = ''
-  errors.password = ''
-
   try {
+    // Reset errors
+    errors.email = ''
+    errors.password = ''
+    globalError.value = ''
     isLoading.value = true
+
+    console.log('Submitting login form:', { email: formData.email }) // Debug log
+
     await auth.login(formData.email, formData.password)
+    console.log('Login successful, redirecting...') // Debug log
     router.push('/dashboard')
   } catch (error) {
-    errors.email = error.message
+    console.error('Login error in component:', error) // Debug log
+    globalError.value = error.message
   } finally {
     isLoading.value = false
   }
@@ -179,5 +189,14 @@ const handleLogin = async () => {
   text-decoration: none;
   font-weight: 500;
   margin-left: 0.5rem;
+}
+
+.global-error {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #fee2e2;
+  color: #ef4444;
+  text-align: center;
 }
 </style> 

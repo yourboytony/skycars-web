@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
 // Lazy load components for better performance
 const Home = () => import('../views/Home.vue')
@@ -128,24 +129,24 @@ const router = createRouter({
 
 // Navigation Guards
 router.beforeEach((to, from, next) => {
+  const auth = useAuthStore()
+  
   // Update document title
   document.title = to.meta.title || 'Skycars'
 
-  // Check if route requires auth
-  const isAuthenticated = localStorage.getItem('user-token') // Replace with your auth check
-  
-  if (to.meta.requiresAuth && !isAuthenticated) {
-    // Redirect to login if auth is required but user is not authenticated
-    next({
-      name: 'Login',
-      query: { redirect: to.fullPath }
-    })
-  } else if (to.meta.hideForAuth && isAuthenticated) {
-    // Redirect to dashboard if user is already authenticated
-    next({ name: 'Dashboard' })
-  } else {
-    next()
+  // Check for protected routes
+  if (to.meta.requiresAuth && !auth.isAuthenticated()) {
+    next('/login')
+    return
   }
+
+  // Check for auth-only routes (login/register) when already authenticated
+  if (to.meta.hideForAuth && auth.isAuthenticated()) {
+    next('/dashboard')
+    return
+  }
+
+  next()
 })
 
 // Handle route errors
