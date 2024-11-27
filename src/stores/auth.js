@@ -1,111 +1,92 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
 
-export const useAuthStore = defineStore('auth', () => {
-  const token = ref(localStorage.getItem('user-token') || null)
-  const user = ref(JSON.parse(localStorage.getItem('user-data') || 'null'))
-  const isLoading = ref(false)
-  const error = ref(null)
+export const useAuthStore = defineStore('auth', {
+  state: () => ({
+    token: localStorage.getItem('token') || null,
+    user: JSON.parse(localStorage.getItem('user')) || null,
+    loading: false,
+    error: null
+  }),
 
-  const login = async (email, password) => {
-    try {
-      isLoading.value = true
-      error.value = null
+  actions: {
+    async register(credentials) {
+      this.loading = true
+      this.error = null
       
-      console.log('Login attempt:', { email, apiUrl: import.meta.env.VITE_API_URL }) // Debug log
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(credentials)
+        })
 
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ email, password }),
-        mode: 'cors'
-      })
+        const data = await response.json()
 
-      console.log('Login response status:', response.status) // Debug log
+        if (!response.ok) {
+          throw new Error(data.error || 'Registration failed')
+        }
 
-      const data = await response.json()
-      console.log('Login response data:', data) // Debug log
+        this.token = data.token
+        this.user = data.user
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Login failed')
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      } finally {
+        this.loading = false
       }
+    },
 
-      token.value = data.token
-      user.value = data.user
-      localStorage.setItem('user-token', data.token)
-      localStorage.setItem('user-data', JSON.stringify(data.user))
+    async login(credentials) {
+      this.loading = true
+      this.error = null
+      
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(credentials)
+        })
 
-      return data
-    } catch (err) {
-      console.error('Login error:', err)
-      error.value = err.message || 'Failed to connect to the server'
-      throw new Error(error.value)
-    } finally {
-      isLoading.value = false
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Login failed')
+        }
+
+        this.token = data.token
+        this.user = data.user
+
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+
+        return data
+      } catch (error) {
+        this.error = error.message
+        throw error
+      } finally {
+        this.loading = false
+      }
+    },
+
+    logout() {
+      this.token = null
+      this.user = null
+      this.error = null
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    },
+
+    isAuthenticated() {
+      return !!this.token
     }
   }
-
-  const register = async (name, email, password) => {
-    try {
-      isLoading.value = true
-      error.value = null
-
-      console.log('Register attempt:', { name, email, apiUrl: import.meta.env.VITE_API_URL }) // Debug log
-
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ name, email, password }),
-        mode: 'cors'
-      })
-
-      console.log('Register response status:', response.status) // Debug log
-
-      const data = await response.json()
-      console.log('Register response data:', data) // Debug log
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed')
-      }
-
-      token.value = data.token
-      user.value = data.user
-      localStorage.setItem('user-token', data.token)
-      localStorage.setItem('user-data', JSON.stringify(data.user))
-
-      return data
-    } catch (err) {
-      console.error('Registration error:', err)
-      error.value = err.message || 'Failed to connect to the server'
-      throw new Error(error.value)
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  const logout = () => {
-    token.value = null
-    user.value = null
-    localStorage.removeItem('user-token')
-    localStorage.removeItem('user-data')
-  }
-
-  const isAuthenticated = () => !!token.value
-
-  return {
-    token,
-    user,
-    isLoading,
-    error,
-    login,
-    register,
-    logout,
-    isAuthenticated
-  }
-}) 
+})
