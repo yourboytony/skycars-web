@@ -2,12 +2,22 @@
   <div class="home">
     <!-- Hero Section -->
     <section class="hero">
-      <div class="hero-content">
-        <h1>Welcome to Skycars</h1>
+      <div class="hero-background">
+        <div class="stars"></div>
+        <div class="twinkling"></div>
+      </div>
+      <div class="hero-content glass">
+        <h1 class="animated-text">Welcome to Skycars</h1>
         <p class="subtitle">Your Ultimate Aviation Planning Platform</p>
         <div class="cta-buttons">
-          <button @click="$emit('showRegister')" class="btn-primary">Get Started</button>
-          <button @click="$emit('showLogin')" class="btn-secondary">Sign In</button>
+          <button @click="$emit('showRegister')" class="btn-primary">
+            Get Started
+            <i class="fas fa-arrow-right"></i>
+          </button>
+          <button @click="$emit('showLogin')" class="btn-secondary">
+            Sign In
+            <i class="fas fa-sign-in-alt"></i>
+          </button>
         </div>
       </div>
     </section>
@@ -259,5 +269,79 @@ export default {
   .stats {
     grid-template-columns: 1fr;
   }
+}
+
+.hero-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow: hidden;
+}
+
+.stars {
+  background: #000 url(/images/stars.png) repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  animation: move-stars 200s linear infinite;
+}
+
+.twinkling {
+  background: transparent url(/images/twinkling.png) repeat;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  animation: move-twinkle 200s linear infinite;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  padding: 3rem;
+  border-radius: 16px;
+}
+
+.animated-text {
+  background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient 8s ease infinite;
+}
+
+.btn-primary,
+.btn-secondary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes move-stars {
+  from { background-position: 0 0; }
+  to { background-position: 10000px 0; }
+}
+
+@keyframes move-twinkle {
+  from { background-position: 0 0; }
+  to { background-position: 10000px 0; }
+}
+
+@keyframes gradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 </style> 

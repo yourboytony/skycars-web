@@ -1,5 +1,6 @@
 <template>
-  <div class="app">
+  <LoadingScreen v-if="isLoading" />
+  <div class="app" :class="{ 'loaded': !isLoading }">
     <nav class="navbar">
       <div class="nav-content">
         <router-link to="/" class="logo">Skycars</router-link>
@@ -41,14 +42,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from './stores/auth'
 import LoginModal from './components/LoginModal.vue'
 import RegisterModal from './components/RegisterModal.vue'
+import LoadingScreen from './components/LoadingScreen.vue'
 
 const authStore = useAuthStore()
 const showLoginModal = ref(false)
 const showRegisterModal = ref(false)
+const isLoading = ref(true)
+
+onMounted(() => {
+  // Simulate initial loading
+  setTimeout(() => {
+    isLoading.value = false
+  }, 2500)
+})
 
 const switchModal = (type) => {
   showLoginModal.value = type === 'login'
@@ -62,22 +72,55 @@ const handleLogout = () => {
 
 <style>
 :root {
-  --primary-color: #2563eb;
-  --secondary-color: #1e40af;
-  --background-color: #f8fafc;
+  --primary-color: #3b82f6;
+  --primary-dark: #1e3a8a;
+  --secondary-color: #10b981;
+  --accent-color: #f59e0b;
   --text-color: #1f2937;
+  --background-light: #f8fafc;
+  --background-dark: #1f2937;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+.app {
+  opacity: 0;
+  transition: opacity 0.5s ease-out;
 }
 
-body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--background-color);
-  color: var(--text-color);
+.app.loaded {
+  opacity: 1;
+}
+
+/* Add glass morphism effects */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+/* Add smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Add modern scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-light);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 4px;
+}
+
+/* Add text selection color */
+::selection {
+  background: var(--primary-color);
+  color: white;
 }
 
 .navbar {
