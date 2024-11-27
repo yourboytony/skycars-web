@@ -1,7 +1,7 @@
 <template>
   <nav class="navbar glass">
     <router-link to="/" class="logo">
-      <img src="@/assets/logo.png" alt="Skycars" />
+      <img src="../assets/logo.png" alt="Skycars" />
     </router-link>
 
     <div class="nav-links" :class="{ 'active': isMenuOpen }">
