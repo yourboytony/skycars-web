@@ -7,74 +7,53 @@
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group" :class="{ 'error': errors.name }">
           <label for="name">Full Name</label>
-          <div class="input-wrapper">
-            <i class="fas fa-user"></i>
-            <input 
-              type="text" 
-              id="name"
-              v-model="formData.name"
-              required
-              placeholder="Enter your full name"
-            >
-          </div>
+          <input 
+            type="text" 
+            id="name"
+            v-model="formData.name"
+            required
+            placeholder="Enter your full name"
+          >
           <span class="error-message">{{ errors.name }}</span>
         </div>
 
         <div class="form-group" :class="{ 'error': errors.email }">
           <label for="email">Email</label>
-          <div class="input-wrapper">
-            <i class="fas fa-envelope"></i>
-            <input 
-              type="email" 
-              id="email"
-              v-model="formData.email"
-              required
-              placeholder="Enter your email"
-            >
-          </div>
+          <input 
+            type="email" 
+            id="email"
+            v-model="formData.email"
+            required
+            placeholder="Enter your email"
+          >
           <span class="error-message">{{ errors.email }}</span>
         </div>
 
         <div class="form-group" :class="{ 'error': errors.password }">
           <label for="password">Password</label>
-          <div class="input-wrapper">
-            <i class="fas fa-lock"></i>
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password"
-              v-model="formData.password"
-              required
-              placeholder="Create a password"
-            >
-            <button 
-              type="button"
-              class="toggle-password"
-              @click="showPassword = !showPassword"
-            >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </button>
-          </div>
+          <input 
+            :type="showPassword ? 'text' : 'password'" 
+            id="password"
+            v-model="formData.password"
+            required
+            placeholder="Create a password"
+          >
+          <button 
+            type="button"
+            class="toggle-password"
+            @click="showPassword = !showPassword"
+          >
+            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
           <span class="error-message">{{ errors.password }}</span>
-        </div>
-
-        <div class="form-group">
-          <label class="terms">
-            <input 
-              type="checkbox" 
-              v-model="formData.acceptTerms"
-              required
-            >
-            <span>I agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a></span>
-          </label>
         </div>
 
         <button 
           type="submit" 
           class="submit-button"
-          :disabled="isLoading || !formData.acceptTerms"
+          :disabled="isLoading"
         >
-          <span>{{ isLoading ? 'Creating Account...' : 'Create Account' }}</span>
-          <i class="fas fa-arrow-right"></i>
+          {{ isLoading ? 'Creating Account...' : 'Create Account' }}
         </button>
       </form>
 
@@ -99,8 +78,7 @@ const isLoading = ref(false)
 const formData = reactive({
   name: '',
   email: '',
-  password: '',
-  acceptTerms: false
+  password: ''
 })
 
 const errors = reactive({
@@ -117,20 +95,11 @@ const validateForm = () => {
   errors.email = ''
   errors.password = ''
 
-  // Validate name
   if (formData.name.length < 2) {
     errors.name = 'Name must be at least 2 characters'
     isValid = false
   }
 
-  // Validate email
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(formData.email)) {
-    errors.email = 'Please enter a valid email'
-    isValid = false
-  }
-
-  // Validate password
   if (formData.password.length < 8) {
     errors.password = 'Password must be at least 8 characters'
     isValid = false
@@ -144,37 +113,13 @@ const handleRegister = async () => {
 
   try {
     isLoading.value = true
-    
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password
-      })
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Registration failed')
-    }
-
-    // Store token and user data
-    auth.setToken(data.token)
-    auth.setUser(data.user)
-
-    // Redirect to dashboard
+    await auth.register(formData.name, formData.email, formData.password)
     router.push('/dashboard')
   } catch (error) {
-    console.error('Registration error:', error)
     if (error.message.includes('already in use')) {
-      errors.email = 'Email already in use'
+      errors.email = error.message
     } else {
-      errors.email = error.message || 'Registration failed'
+      errors.email = error.message
     }
   } finally {
     isLoading.value = false
@@ -200,42 +145,45 @@ const handleRegister = async () => {
   text-align: center;
 }
 
-/* Add these styles to App.vue */
 .auth-form {
   margin-top: 2rem;
+  text-align: left;
 }
 
 .form-group {
   margin-bottom: 1.5rem;
-  text-align: left;
-}
-
-.input-wrapper {
   position: relative;
 }
 
-.input-wrapper i {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
   color: var(--text-light);
 }
 
-.input-wrapper input {
+.form-group input {
   width: 100%;
-  padding: 0.75rem 1rem 0.75rem 2.5rem;
+  padding: 0.75rem 1rem;
   border: 1px solid var(--border-color);
   border-radius: 0.5rem;
-  background: var(--background-primary);
+  background: var(--background-secondary);
   color: var(--text-color);
+}
+
+.form-group.error input {
+  border-color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
 }
 
 .toggle-password {
   position: absolute;
   right: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 2.5rem;
   background: none;
   border: none;
   color: var(--text-light);
@@ -251,10 +199,6 @@ const handleRegister = async () => {
   border-radius: 0.5rem;
   font-weight: 500;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
 }
 
 .submit-button:disabled {
@@ -271,15 +215,6 @@ const handleRegister = async () => {
   color: var(--primary-color);
   text-decoration: none;
   font-weight: 500;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.form-group.error input {
-  border-color: #ef4444;
+  margin-left: 0.5rem;
 }
 </style> 

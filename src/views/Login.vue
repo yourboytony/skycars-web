@@ -7,49 +7,33 @@
       <form @submit.prevent="handleLogin" class="auth-form">
         <div class="form-group" :class="{ 'error': errors.email }">
           <label for="email">Email</label>
-          <div class="input-wrapper">
-            <i class="fas fa-envelope"></i>
-            <input 
-              type="email" 
-              id="email"
-              v-model="formData.email"
-              required
-              placeholder="Enter your email"
-            >
-          </div>
+          <input 
+            type="email" 
+            id="email"
+            v-model="formData.email"
+            required
+            placeholder="Enter your email"
+          >
           <span class="error-message">{{ errors.email }}</span>
         </div>
 
         <div class="form-group" :class="{ 'error': errors.password }">
           <label for="password">Password</label>
-          <div class="input-wrapper">
-            <i class="fas fa-lock"></i>
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              id="password"
-              v-model="formData.password"
-              required
-              placeholder="Enter your password"
-            >
-            <button 
-              type="button"
-              class="toggle-password"
-              @click="showPassword = !showPassword"
-            >
-              <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-            </button>
-          </div>
+          <input 
+            :type="showPassword ? 'text' : 'password'" 
+            id="password"
+            v-model="formData.password"
+            required
+            placeholder="Enter your password"
+          >
+          <button 
+            type="button"
+            class="toggle-password"
+            @click="showPassword = !showPassword"
+          >
+            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
           <span class="error-message">{{ errors.password }}</span>
-        </div>
-
-        <div class="form-options">
-          <label class="remember-me">
-            <input type="checkbox" v-model="formData.remember">
-            <span>Remember me</span>
-          </label>
-          <router-link to="/forgot-password" class="forgot-password">
-            Forgot Password?
-          </router-link>
         </div>
 
         <button 
@@ -57,8 +41,7 @@
           class="submit-button"
           :disabled="isLoading"
         >
-          <span>{{ isLoading ? 'Logging in...' : 'Log In' }}</span>
-          <i class="fas fa-arrow-right"></i>
+          {{ isLoading ? 'Logging in...' : 'Log In' }}
         </button>
       </form>
 
@@ -82,8 +65,7 @@ const isLoading = ref(false)
 
 const formData = reactive({
   email: '',
-  password: '',
-  remember: false
+  password: ''
 })
 
 const errors = reactive({
@@ -98,37 +80,10 @@ const handleLogin = async () => {
 
   try {
     isLoading.value = true
-    
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        email: formData.email,
-        password: formData.password
-      })
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error || 'Login failed')
-    }
-
-    // Store token and user data
-    auth.setToken(data.token)
-    auth.setUser(data.user)
-    
-    if (formData.remember) {
-      localStorage.setItem('remember-token', data.token)
-    }
-
-    // Redirect to dashboard
+    await auth.login(formData.email, formData.password)
     router.push('/dashboard')
   } catch (error) {
-    console.error('Login error:', error)
-    errors.email = error.message || 'Invalid email or password'
+    errors.email = error.message
   } finally {
     isLoading.value = false
   }
@@ -153,5 +108,76 @@ const handleLogin = async () => {
   text-align: center;
 }
 
-/* Rest of the styles from App.vue will apply */
+.auth-form {
+  margin-top: 2rem;
+  text-align: left;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-light);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--background-secondary);
+  color: var(--text-color);
+}
+
+.form-group.error input {
+  border-color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 1rem;
+  top: 2.5rem;
+  background: none;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.submit-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.auth-footer {
+  margin-top: 2rem;
+  color: var(--text-light);
+}
+
+.auth-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.5rem;
+}
 </style> 
