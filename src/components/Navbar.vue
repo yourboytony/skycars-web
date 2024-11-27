@@ -1,98 +1,70 @@
 <template>
-  <nav class="navbar" :class="{ 'scrolled': isScrolled }">
-    <div class="nav-container">
-      <router-link to="/" class="nav-brand">
-        <div class="logo-icon">
-          <i class="fas fa-plane-departure"></i>
-          <div class="icon-glow"></div>
-        </div>
-        <span class="logo-text">SKYCARS</span>
+  <nav class="navbar glass">
+    <router-link to="/" class="logo">
+      <img src="../assets/logo.png" alt="Skycars Logo" />
+    </router-link>
+
+    <div class="nav-links" :class="{ 'active': isMenuOpen }">
+      <router-link to="/features">Features</router-link>
+      <router-link to="/pricing">Pricing</router-link>
+      <router-link to="/support">Support</router-link>
+      <router-link to="/contact">Contact</router-link>
+    </div>
+
+    <div class="auth-buttons" :class="{ 'active': isMenuOpen }">
+      <router-link 
+        v-if="!auth.isAuthenticated()" 
+        to="/login" 
+        class="login-btn"
+      >
+        Log In
       </router-link>
-
-      <div class="nav-menu" :class="{ 'active': isMenuOpen }">
-        <div class="nav-links">
-          <router-link 
-            v-for="link in navLinks" 
-            :key="link.path" 
-            :to="link.path"
-            class="nav-link"
-            :class="{ 'active': currentRoute === link.path }"
-            @click="closeMenu"
-          >
-            <i :class="link.icon"></i>
-            <span>{{ link.name }}</span>
-            <div class="link-highlight"></div>
-          </router-link>
-        </div>
-
-        <div class="nav-auth">
-          <button @click="$emit('showLogin')" class="btn-login glass">
-            <i class="fas fa-user"></i>
-            <span>Login</span>
-          </button>
-          <button @click="$emit('showRegister')" class="btn-register">
-            <span>Get Started</span>
-            <i class="fas fa-arrow-right"></i>
-          </button>
-        </div>
-      </div>
-
-      <button class="menu-toggle" @click="toggleMenu">
-        <div class="menu-icon" :class="{ 'active': isMenuOpen }">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
+      <router-link 
+        v-if="!auth.isAuthenticated()" 
+        to="/register" 
+        class="register-btn"
+      >
+        Get Started
+      </router-link>
+      <router-link 
+        v-if="auth.isAuthenticated()" 
+        to="/dashboard" 
+        class="dashboard-btn"
+      >
+        Dashboard
+      </router-link>
+      <button 
+        v-if="auth.isAuthenticated()" 
+        @click="handleLogout" 
+        class="logout-btn"
+      >
+        Log Out
       </button>
     </div>
+
+    <button class="menu-btn" @click="toggleMenu">
+      <i class="fas fa-bars"></i>
+    </button>
   </nav>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
-const route = useRoute()
-const isScrolled = ref(false)
+const router = useRouter()
+const auth = useAuthStore()
 const isMenuOpen = ref(false)
-
-const currentRoute = computed(() => route.path)
-
-const navLinks = [
-  { name: 'Home', path: '/', icon: 'fas fa-home' },
-  { name: 'Features', path: '/features', icon: 'fas fa-star' },
-  { name: 'Pricing', path: '/pricing', icon: 'fas fa-tag' },
-  { name: 'Contact', path: '/contact', icon: 'fas fa-envelope' },
-  { name: 'Support', path: '/support', icon: 'fas fa-headset' }
-]
-
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20
-}
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value
-  if (isMenuOpen.value) {
-    document.body.style.overflow = 'hidden'
-  } else {
-    document.body.style.overflow = ''
-  }
 }
 
-const closeMenu = () => {
-  isMenuOpen.value = false
-  document.body.style.overflow = ''
+const handleLogout = () => {
+  auth.logout()
+  router.push('/')
 }
-
-onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-  handleScroll() // Check initial scroll position
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-  document.body.style.overflow = '' // Reset overflow
-})
 </script>
 
 <style scoped>
@@ -359,6 +331,66 @@ onUnmounted(() => {
   .btn-register {
     width: 100%;
     justify-content: center;
+  }
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.login-btn,
+.logout-btn {
+  color: var(--text-color);
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.register-btn,
+.dashboard-btn {
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1.5rem;
+  border-radius: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.login-btn:hover,
+.logout-btn:hover {
+  background: var(--background-secondary);
+}
+
+.register-btn:hover,
+.dashboard-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .auth-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+
+  .login-btn,
+  .register-btn,
+  .dashboard-btn,
+  .logout-btn {
+    width: 100%;
+    text-align: center;
   }
 }
 </style> 

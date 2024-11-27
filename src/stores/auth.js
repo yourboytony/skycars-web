@@ -12,24 +12,22 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       error.value = null
       
-      console.log('Attempting login with:', { email }) // Debug log
-
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ email, password })
+      }).catch(err => {
+        throw new Error('Network error. Please check your connection.')
       })
 
       const data = await response.json()
-      console.log('Login response:', data) // Debug log
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
       }
 
-      // Store token and user data
       token.value = data.token
       user.value = data.user
       localStorage.setItem('user-token', data.token)
