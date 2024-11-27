@@ -1856,315 +1856,20 @@ const subscribeNewsletter = async () => {
 }
 
 .contact-section {
-  padding: 8rem 2rem;
-  position: relative;
-  overflow: hidden;
-  background: var(--background-secondary);
-}
-
-.contact-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  position: relative;
-}
-
-.contact-content {
-  display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 4rem;
-  padding: 4rem;
-  border-radius: 2rem;
   position: relative;
   z-index: 2;
-}
-
-.contact-title {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.contact-subtitle {
-  color: var(--text-light);
-  font-size: 1.25rem;
-  margin-bottom: 3rem;
-}
-
-.contact-methods {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  margin-bottom: 3rem;
-}
-
-.contact-method {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.method-icon {
-  position: relative;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  border-radius: 1rem;
-  font-size: 1.5rem;
-  color: white;
-}
-
-.icon-glow {
-  position: absolute;
-  inset: 0;
-  background: inherit;
-  border-radius: inherit;
-  filter: blur(15px);
-  opacity: 0.5;
-  z-index: -1;
-}
-
-.method-details h3 {
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
-}
-
-.method-details p {
-  color: var(--text-light);
-}
-
-.social-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.social-link {
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--background-primary);
-  border-radius: 50%;
-  color: var(--text-color);
-  font-size: 1.25rem;
-  transition: all 0.3s ease;
-}
-
-.social-link:hover {
-  transform: translateY(-3px);
-  color: var(--primary-color);
-  box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.1);
-}
-
-.contact-form {
-  background: var(--background-primary);
-  padding: 3rem;
-  border-radius: 1.5rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.form-group.full-width {
-  grid-column: 1 / -1;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.75rem;
-  font-weight: 500;
-}
-
-.input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-wrapper i {
-  position: absolute;
-  left: 1rem;
-  color: var(--text-light);
-  transition: color 0.3s ease;
-}
-
-.input-wrapper input,
-.input-wrapper textarea {
-  width: 100%;
-  padding: 1rem 1rem 1rem 3rem;
-  background: transparent;
-  border: 1px solid var(--border-color);
-  border-radius: 0.75rem;
-  color: var(--text-color);
-  transition: all 0.3s ease;
-}
-
-.input-wrapper textarea {
-  min-height: 150px;
-  resize: vertical;
-}
-
-.form-group.focused .input-wrapper i {
-  color: var(--primary-color);
-}
-
-.form-group.focused .input-wrapper input,
-.form-group.focused .input-wrapper textarea {
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.1);
-}
-
-.submit-btn {
-  width: 100%;
-  padding: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: white;
-  border: none;
-  border-radius: 0.75rem;
-  font-weight: 600;
-  font-size: 1.125rem;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s ease;
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-}
-
-.btn-glow {
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.submit-btn:hover .btn-glow {
-  opacity: 0.1;
-  animation: rotate 2s linear infinite;
-}
-
-/* Decorative Elements */
-.decorative-elements {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.floating-shape {
-  position: absolute;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  border-radius: 50%;
-  filter: blur(40px);
-  opacity: 0.1;
-  animation: float 20s ease-in-out infinite;
-}
-
-.shape-1 {
-  width: 300px;
-  height: 300px;
-  top: -100px;
-  left: -100px;
-  animation-delay: -5s;
-}
-
-.shape-2 {
-  width: 200px;
-  height: 200px;
-  bottom: -50px;
-  right: -50px;
-  animation-delay: -2s;
-}
-
-.shape-3 {
-  width: 150px;
-  height: 150px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation-delay: -8s;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(30px, 30px);
-  }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@media (max-width: 1024px) {
-  .contact-content {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
-}
-
-@media (max-width: 768px) {
-  .contact-section {
-    padding: 4rem 1rem;
-  }
-  
-  .contact-content {
-    padding: 2rem;
-  }
-  
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.currency-selector {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-  justify-content: center;
-}
-
-.currency-selector select {
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  border: 1px solid var(--border-color);
-  background: var(--background-primary);
-  color: var(--text-color);
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.currency-selector select:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+  padding: 8rem 2rem;
+  background: var(--background-secondary);
+  order: 1;
 }
 
 .footer {
   position: relative;
+  z-index: 1;
   background: var(--background-secondary);
-  margin-top: 4rem;
   padding-top: 4rem;
-  color: var(--text-color);
+  margin-top: 0;
+  order: 2;
 }
 
 .footer-top {
@@ -2377,7 +2082,6 @@ const subscribeNewsletter = async () => {
 
 @media (max-width: 768px) {
   .footer {
-    margin-top: 2rem;
     padding-top: 2rem;
   }
 
@@ -2404,5 +2108,13 @@ const subscribeNewsletter = async () => {
     flex-direction: column;
     gap: 1rem;
   }
+}
+
+.glass {
+  position: relative;
+  z-index: 1;
+  background: rgba(var(--background-primary-rgb), 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--primary-rgb), 0.1);
 }
 </style> 
