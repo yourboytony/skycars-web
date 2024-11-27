@@ -12,17 +12,22 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       error.value = null
       
+      console.log('Login attempt:', { email, apiUrl: import.meta.env.VITE_API_URL }) // Debug log
+
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ email, password })
-      }).catch(err => {
-        throw new Error('Network error. Please check your connection.')
+        body: JSON.stringify({ email, password }),
+        mode: 'cors'
       })
 
+      console.log('Login response status:', response.status) // Debug log
+
       const data = await response.json()
+      console.log('Login response data:', data) // Debug log
 
       if (!response.ok) {
         throw new Error(data.error || 'Login failed')
@@ -36,8 +41,8 @@ export const useAuthStore = defineStore('auth', () => {
       return data
     } catch (err) {
       console.error('Login error:', err)
-      error.value = err.message
-      throw err
+      error.value = err.message || 'Failed to connect to the server'
+      throw new Error(error.value)
     } finally {
       isLoading.value = false
     }
@@ -48,24 +53,27 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       error.value = null
 
-      console.log('Attempting registration with:', { name, email }) // Debug log
+      console.log('Register attempt:', { name, email, apiUrl: import.meta.env.VITE_API_URL }) // Debug log
 
       const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password }),
+        mode: 'cors'
       })
 
+      console.log('Register response status:', response.status) // Debug log
+
       const data = await response.json()
-      console.log('Registration response:', data) // Debug log
+      console.log('Register response data:', data) // Debug log
 
       if (!response.ok) {
         throw new Error(data.error || 'Registration failed')
       }
 
-      // Store token and user data
       token.value = data.token
       user.value = data.user
       localStorage.setItem('user-token', data.token)
@@ -74,8 +82,8 @@ export const useAuthStore = defineStore('auth', () => {
       return data
     } catch (err) {
       console.error('Registration error:', err)
-      error.value = err.message
-      throw err
+      error.value = err.message || 'Failed to connect to the server'
+      throw new Error(error.value)
     } finally {
       isLoading.value = false
     }
