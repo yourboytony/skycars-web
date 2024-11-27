@@ -57,6 +57,12 @@ const showRegisterModal = ref(false)
 const isLoading = ref(true)
 const themeStore = useThemeStore()
 
+// Initialize theme before mounting
+const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+const savedTheme = localStorage.getItem('theme')
+const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light')
+document.documentElement.classList.toggle('dark', initialTheme === 'dark')
+
 onMounted(() => {
   themeStore.initTheme()
   setTimeout(() => {
@@ -87,6 +93,7 @@ const handleLogout = () => {
   --background-hover: rgba(0, 0, 0, 0.05);
   --border-color: #e5e7eb;
   --shadow-color: rgba(0, 0, 0, 0.1);
+  --text-light: #6b7280;
 }
 
 :root.dark {
@@ -101,12 +108,74 @@ const handleLogout = () => {
   --background-hover: rgba(255, 255, 255, 0.05);
   --border-color: #374151;
   --shadow-color: rgba(0, 0, 0, 0.3);
+  --text-light: #9ca3af;
 }
 
+/* Ensure initial text visibility */
 body {
   background-color: var(--background-primary);
   color: var(--text-color);
   transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Update navbar styles */
+.navbar {
+  background-color: var(--background-primary);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 2rem;
+  transition: all 0.3s ease;
+}
+
+.dark .navbar {
+  background-color: var(--background-secondary);
+}
+
+/* Update link colors */
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.dark a {
+  color: var(--accent-color);
+}
+
+/* Update button styles */
+button {
+  font-family: inherit;
+}
+
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.dark .btn-secondary {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* Add smooth transitions */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 /* Glass effect variations */

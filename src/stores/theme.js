@@ -2,7 +2,9 @@ import { defineStore } from 'pinia'
 
 export const useThemeStore = defineStore('theme', {
   state: () => ({
-    isDark: localStorage.getItem('theme') === 'dark'
+    isDark: localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && 
+             window.matchMedia('(prefers-color-scheme: dark)').matches)
   }),
   
   actions: {
@@ -13,10 +15,6 @@ export const useThemeStore = defineStore('theme', {
     },
     
     initTheme() {
-      // Check system preference on first load
-      if (!localStorage.getItem('theme')) {
-        this.isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      }
       document.documentElement.classList.toggle('dark', this.isDark)
     }
   }
