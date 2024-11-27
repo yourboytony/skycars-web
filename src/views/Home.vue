@@ -181,7 +181,6 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useIntersectionObserver } from '@vueuse/core'
 
 // Stats data
 const stats = ref([
@@ -236,16 +235,20 @@ const scrollToFeatures = () => {
   featuresSection.value?.scrollIntoView({ behavior: 'smooth' })
 }
 
-// Intersection observer for animations
+// Simplified intersection observer
 onMounted(() => {
-  const elements = document.querySelectorAll('.feature-card, .stat-item, .data-card')
-  
-  elements.forEach(el => {
-    useIntersectionObserver(el, ([{ isIntersecting }]) => {
-      if (isIntersecting) {
-        el.classList.add('animate')
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate')
       }
     })
+  }, {
+    threshold: 0.1
+  })
+
+  document.querySelectorAll('.feature-card, .stat-item, .data-card').forEach(el => {
+    observer.observe(el)
   })
 })
 </script>
