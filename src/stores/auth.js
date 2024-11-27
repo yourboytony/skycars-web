@@ -1,85 +1,83 @@
 import { defineStore } from 'pinia'
+import { ref } from 'vue'
 
-export const useAuthStore = defineStore('auth', {
-  state: () => ({
-    user: null,
-    token: localStorage.getItem('token') || null,
-    loading: false,
-    error: null
-  }),
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref(localStorage.getItem('user-token') || null)
+  const user = ref(JSON.parse(localStorage.getItem('user-data') || 'null'))
 
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-    currentUser: (state) => state.user
-  },
+  const login = async (email, password) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
+      })
 
-  actions: {
-    async login(email, password) {
-      this.loading = true
-      this.error = null
-      try {
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password })
-        })
+      const data = await response.json()
 
-        const data = await response.json()
-        
-        if (!response.ok) throw new Error(data.message)
-
-        this.token = data.token
-        this.user = data.user
-        localStorage.setItem('token', data.token)
-      } catch (error) {
-        this.error = error.message
-        throw error
-      } finally {
-        this.loading = false
+      if (!response.ok) {
+        throw new Error(data.error || 'Login failed')
       }
-    },
 
-    async register(email, password, username) {
-      this.loading = true
-      this.error = null
-      
-      try {
-        console.log('Sending registration request')
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email, password, username })
-        })
+      // Store token and user data
+      token.value = data.token
+      user.value = data.user
+      localStorage.setItem('user-token', data.token)
+      localStorage.setItem('user-data', JSON.stringify(data.user))
 
-        const data = await response.json()
-        console.log('Registration response:', data)
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Registration failed')
-        }
-
-        this.token = data.token
-        this.user = data.user
-        localStorage.setItem('token', data.token)
-        
-        return data
-      } catch (error) {
-        console.error('Registration error:', error)
-        this.error = error.message
-        throw error
-      } finally {
-        this.loading = false
-      }
-    },
-
-    logout() {
-      this.token = null
-      this.user = null
-      localStorage.removeItem('token')
+      return data
+    } catch (error) {
+      console.error('Login error:', error)
+      throw error
     }
+  }
+
+  const register = async (name, email, password) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ name, email, password })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      // Store token and user data
+      token.value = data.token
+      user.value = data.user
+      localStorage.setItem('user-token', data.token)
+      localStorage.setItem('user-data', JSON.stringify(data.user))
+
+      return data
+    } catch (error) {
+      console.error('Registration error:', error)
+      throw error
+    }
+  }
+
+  const logout = () => {
+    token.value = null
+    user.value = null
+    localStorage.removeItem('user-token')
+    localStorage.removeItem('user-data')
+  }
+
+  const isAuthenticated = () => !!token.value
+
+  return {
+    token,
+    user,
+    login,
+    register,
+    logout,
+    isAuthenticated
   }
 }) 
