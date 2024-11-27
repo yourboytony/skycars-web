@@ -1017,6 +1017,56 @@ onMounted(() => {
   preloadAssets()
   // ... other onMounted code
 })
+
+const newsletterEmail = ref('')
+const isSubscribing = ref(false)
+
+const footerMenus = [
+  {
+    title: 'Product',
+    items: [
+      { text: 'Features', link: '/features', internal: true },
+      { text: 'Pricing', link: '/pricing', internal: true },
+      { text: 'Updates', link: '/updates', internal: true },
+      { text: 'Beta Program', link: '/beta', internal: true }
+    ]
+  },
+  {
+    title: 'Company',
+    items: [
+      { text: 'About', link: '/about', internal: true },
+      { text: 'Careers', link: '/careers', internal: true },
+      { text: 'Blog', link: '/blog', internal: true },
+      { text: 'Press', link: '/press', internal: true }
+    ]
+  },
+  {
+    title: 'Support',
+    items: [
+      { text: 'Help Center', link: '/help', internal: true },
+      { text: 'Documentation', link: '/docs', internal: true },
+      { text: 'Contact', link: '/contact', internal: true },
+      { text: 'Status', link: '/status', internal: true }
+    ]
+  }
+]
+
+const subscribeNewsletter = async () => {
+  if (!newsletterEmail.value) return
+  
+  isSubscribing.value = true
+  try {
+    // Add your newsletter subscription logic here
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    alert('Successfully subscribed to newsletter!')
+    newsletterEmail.value = ''
+  } catch (error) {
+    console.error('Failed to subscribe:', error)
+    alert('Failed to subscribe. Please try again.')
+  } finally {
+    isSubscribing.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -2107,5 +2157,252 @@ onMounted(() => {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+}
+
+.footer {
+  position: relative;
+  background: var(--background-secondary);
+  margin-top: 4rem;
+  padding-top: 4rem;
+  color: var(--text-color);
+}
+
+.footer-top {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.newsletter-section {
+  background: rgba(var(--background-primary-rgb), 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(var(--primary-rgb), 0.1);
+  border-radius: 1rem;
+  padding: 3rem;
+  margin-bottom: 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.newsletter-content h2 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.newsletter-content p {
+  color: var(--text-light);
+  font-size: 1.1rem;
+}
+
+.newsletter-form {
+  display: flex;
+  gap: 1rem;
+  min-width: 400px;
+}
+
+.input-group {
+  position: relative;
+  flex: 1;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 1rem 1rem 1rem 3rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: var(--background-primary);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+  outline: none;
+}
+
+.input-group i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+}
+
+.newsletter-form button {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.newsletter-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.2);
+}
+
+.newsletter-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(3, 1fr);
+  gap: 4rem;
+  padding-bottom: 4rem;
+}
+
+.footer-brand .footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+}
+
+.brand-description {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.footer-social {
+  display: flex;
+  gap: 1rem;
+}
+
+.social-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--background-primary);
+  border-radius: 50%;
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.social-icon:hover {
+  transform: translateY(-3px);
+  color: var(--primary-color);
+  box-shadow: 0 10px 20px rgba(var(--primary-rgb), 0.1);
+}
+
+.footer-menu h3 {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.footer-menu ul {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-menu a {
+  color: var(--text-light);
+  transition: all 0.3s ease;
+}
+
+.footer-menu a:hover {
+  color: var(--primary-color);
+  transform: translateX(5px);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border-color);
+  padding: 2rem 0;
+  background: rgba(var(--background-primary-rgb), 0.5);
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.copyright {
+  color: var(--text-light);
+}
+
+.legal-links {
+  display: flex;
+  gap: 2rem;
+}
+
+.legal-links a {
+  color: var(--text-light);
+  transition: color 0.3s ease;
+}
+
+.legal-links a:hover {
+  color: var(--primary-color);
+}
+
+@media (max-width: 1024px) {
+  .newsletter-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .newsletter-form {
+    min-width: 100%;
+  }
+
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    margin-top: 2rem;
+    padding-top: 2rem;
+  }
+
+  .newsletter-section {
+    padding: 2rem;
+  }
+
+  .newsletter-form {
+    flex-direction: column;
+  }
+
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .footer-container {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+
+  .legal-links {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 </style> 
