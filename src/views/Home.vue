@@ -267,14 +267,26 @@
                @mouseleave="plan.active = false"
           >
             <div class="pricing-header">
-              <h3>{{ plan.name }}</h3>
-              <div class="price">
-                <span class="currency">$</span>
-                <span class="amount">{{ plan.price }}</span>
-                <span class="period">/month</span>
+              <div class="currency-selector">
+                <label for="currency">Currency:</label>
+                <select v-model="selectedCurrency" @change="updatePrices">
+                  <option v-for="curr in currencies" 
+                          :key="curr.code" 
+                          :value="curr.code"
+                  >
+                    {{ curr.code }} ({{ curr.symbol }})
+                  </option>
+                </select>
               </div>
-              <p class="plan-description">{{ plan.description }}</p>
             </div>
+
+            <div class="price">
+              <span class="currency">{{ currencies[selectedCurrency].symbol }}</span>
+              <span class="amount">{{ formatPrice(plan.basePrice) }}</span>
+              <span class="period">/month</span>
+            </div>
+
+            <p class="plan-description">{{ plan.description }}</p>
 
             <div class="pricing-features">
               <ul>
@@ -702,10 +714,37 @@ const testimonials = [
   // Add more testimonials...
 ]
 
-const plans = [
+const selectedCurrency = ref('CAD')
+const exchangeRates = ref({})
+const basePrice = 1.99 // Base price in CAD
+
+const currencies = {
+  CAD: { code: 'CAD', symbol: '$', rate: 1 },
+  USD: { code: 'USD', symbol: '$', rate: 0.74 },
+  EUR: { code: 'EUR', symbol: '€', rate: 0.68 },
+  GBP: { code: 'GBP', symbol: '£', rate: 0.59 },
+  AUD: { code: 'AUD', symbol: '$', rate: 1.13 },
+  // Add more currencies as needed
+}
+
+const formatPrice = (price) => {
+  const rate = currencies[selectedCurrency.value].rate
+  const convertedPrice = (price * rate).toFixed(2)
+  return convertedPrice
+}
+
+const updatePrices = () => {
+  plans.value = plans.value.map(plan => ({
+    ...plan,
+    displayPrice: formatPrice(plan.basePrice)
+  }))
+}
+
+// Update plans data
+const plans = ref([
   {
     name: 'Basic',
-    price: '29',
+    basePrice: 1.99,
     description: 'Perfect for individual pilots',
     features: [
       { text: 'Basic Flight Planning', included: true },
@@ -716,8 +755,40 @@ const plans = [
     popular: false,
     active: false
   },
-  // Add more plans...
-]
+  {
+    name: 'Pro',
+    basePrice: 4.99,
+    description: 'For serious aviation enthusiasts',
+    features: [
+      { text: 'Advanced Flight Planning', included: true },
+      { text: 'Real-time Weather', included: true },
+      { text: 'Route Optimization', included: true },
+      { text: 'Premium Support', included: true }
+    ],
+    popular: true,
+    active: false
+  }
+])
+
+// Fetch real exchange rates on component mount
+onMounted(async () => {
+  try {
+    const response = await fetch(
+      'https://api.exchangerate-api.com/v4/latest/CAD'
+    )
+    const data = await response.json()
+    exchangeRates.value = data.rates
+    // Update currency rates with real data
+    Object.keys(currencies).forEach(code => {
+      if (exchangeRates.value[code]) {
+        currencies[code].rate = exchangeRates.value[code]
+      }
+    })
+    updatePrices()
+  } catch (error) {
+    console.error('Failed to fetch exchange rates:', error)
+  }
+})
 
 const nextSlide = () => {
   activeSlide.value = (activeSlide.value + 1) % testimonials.length
@@ -1539,14 +1610,18 @@ onMounted(() => {
 }
 
 .price {
-  font-size: 4rem;
+  font-size: 3rem;
   font-weight: 700;
   color: var(--primary-color);
   margin: 1.5rem 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
 }
 
 .currency {
-  font-size: 2rem;
+  font-size: 1.5rem;
   vertical-align: super;
 }
 
@@ -2008,5 +2083,29 @@ onMounted(() => {
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.currency-selector {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.currency-selector select {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border-color);
+  background: var(--background-primary);
+  color: var(--text-color);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.currency-selector select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
 }
 </style> 

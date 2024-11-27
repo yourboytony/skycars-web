@@ -11,12 +11,13 @@
         </router-link>
       </div>
 
-      <div class="nav-menu">
+      <div class="nav-menu" :class="{ 'active': isMenuOpen }">
         <div class="nav-links">
           <router-link v-for="link in navLinks" 
             :key="link.path" 
             :to="link.path" 
             class="nav-link hover-effect"
+            @click="isMenuOpen = false"
           >
             <i :class="link.icon"></i>
             <span>{{ link.name }}</span>
@@ -35,6 +36,10 @@
           </button>
         </div>
       </div>
+
+      <button class="mobile-toggle" @click="toggleMenu">
+        <i :class="isMenuOpen ? 'fas fa-times' : 'fas fa-bars'"></i>
+      </button>
     </div>
   </nav>
 </template>
@@ -43,15 +48,21 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isScrolled = ref(false)
-const isMobileMenuOpen = ref(false)
+const isMenuOpen = ref(false)
+
+const navLinks = [
+  { name: 'Home', path: '/', icon: 'fas fa-home' },
+  { name: 'Features', path: '/features', icon: 'fas fa-star' },
+  { name: 'Pricing', path: '/pricing', icon: 'fas fa-tag' },
+  { name: 'Support', path: '/support', icon: 'fas fa-headset' }
+]
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20
 }
 
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-  document.body.style.overflow = isMobileMenuOpen.value ? 'hidden' : ''
+const toggleMenu = () => {
+  isMenuOpen.value = !isMenuOpen.value
 }
 
 onMounted(() => {
