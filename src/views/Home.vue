@@ -1,61 +1,57 @@
 <template>
   <div class="home">
-    <!-- Animated Background -->
-    <div class="animated-bg">
-      <div class="grid-overlay"></div>
-      <div class="particles" ref="particlesContainer"></div>
-    </div>
+    <!-- Subtle Gradient Background -->
+    <div class="background-gradient"></div>
 
     <!-- Hero Section -->
     <section class="hero">
       <div class="hero-content">
-        <h1 class="glitch-title" data-text="SkyCars Collective">
+        <h1 class="main-title">
           SkyCars Collective
+          <span class="title-accent"></span>
         </h1>
-        <p class="cyber-subtitle">
-          Next Generation Flight Simulation Marketplace
-        </p>
+        <p class="hero-subtitle">Experience Next-Generation Flight Simulation</p>
         <div class="hero-stats">
-          <div class="stat" v-for="(stat, index) in stats" :key="index">
+          <div class="stat-item" v-for="(stat, index) in stats" :key="index">
             <span class="stat-value">{{ stat.value }}</span>
             <span class="stat-label">{{ stat.label }}</span>
           </div>
         </div>
         <div class="hero-cta">
-          <button class="cyber-button primary">
-            <span class="cyber-button__glitch"></span>
-            <span class="cyber-button__label">Explore Aircraft</span>
+          <button class="primary-button">
+            Explore Aircraft
+            <span class="button-glow"></span>
           </button>
-          <button class="cyber-button secondary">
-            <span class="cyber-button__glitch"></span>
-            <span class="cyber-button__label">Join Community</span>
+          <button class="secondary-button">
+            View Marketplace
           </button>
         </div>
       </div>
-      <div class="hero-visual" ref="modelContainer"></div>
+      <div class="hero-visual" ref="modelContainer">
+        <!-- 3D Model Container -->
+      </div>
     </section>
 
     <!-- Featured Aircraft -->
-    <section class="featured-section glass-panel">
+    <section class="featured-section">
       <h2 class="section-title">Featured Aircraft</h2>
       <div class="aircraft-grid">
         <div v-for="aircraft in featuredAircraft" 
              :key="aircraft.id" 
-             class="aircraft-card"
-             @mouseenter="onCardHover"
-             @mouseleave="onCardLeave">
+             class="aircraft-card">
           <div class="card-image">
             <img :src="aircraft.image" :alt="aircraft.name">
-            <div class="card-overlay"></div>
+            <div class="card-overlay">
+              <span class="card-price">{{ aircraft.price }} Credits</span>
+            </div>
           </div>
           <div class="card-content">
-            <h3>{{ aircraft.name }}</h3>
-            <div class="card-specs">
-              <span>{{ aircraft.simulator }}</span>
-              <span>{{ aircraft.price }} Credits</span>
+            <h3 class="card-title">{{ aircraft.name }}</h3>
+            <p class="card-description">{{ aircraft.description }}</p>
+            <div class="card-footer">
+              <span class="simulator-tag">{{ aircraft.simulator }}</span>
+              <button class="details-button">View Details</button>
             </div>
-            <p>{{ aircraft.description }}</p>
-            <button class="neo-button">View Details</button>
           </div>
         </div>
       </div>
@@ -63,46 +59,23 @@
 
     <!-- Latest Updates -->
     <section class="updates-section">
-      <div class="updates-content glass-panel">
+      <div class="updates-content">
         <h2 class="section-title">Latest Updates</h2>
         <div class="updates-grid">
           <div v-for="update in latestUpdates" 
                :key="update.id" 
                class="update-card">
-            <div class="update-date">{{ update.date }}</div>
-            <h3>{{ update.title }}</h3>
-            <p>{{ update.description }}</p>
-            <div class="update-tags">
-              <span v-for="tag in update.tags" 
-                    :key="tag" 
-                    class="tag">{{ tag }}</span>
+            <div class="update-header">
+              <span class="update-date">{{ update.date }}</span>
+              <div class="update-tags">
+                <span v-for="tag in update.tags" 
+                      :key="tag" 
+                      class="tag">{{ tag }}</span>
+              </div>
             </div>
+            <h3 class="update-title">{{ update.title }}</h3>
+            <p class="update-description">{{ update.description }}</p>
           </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Community Section -->
-    <section class="community-section glass-panel">
-      <h2 class="section-title">Join Our Community</h2>
-      <div class="community-grid">
-        <div class="community-stats">
-          <div class="community-stat">
-            <span class="stat-value">15K+</span>
-            <span class="stat-label">Active Pilots</span>
-          </div>
-          <div class="community-stat">
-            <span class="stat-value">500+</span>
-            <span class="stat-label">Daily Events</span>
-          </div>
-        </div>
-        <div class="community-cta">
-          <button class="neo-button discord">
-            Join Discord
-          </button>
-          <button class="neo-button forum">
-            Visit Forum
-          </button>
         </div>
       </div>
     </section>
@@ -223,43 +196,39 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* Modern, Clean Design System */
+:root {
+  --primary: #2D7FFA;
+  --primary-dark: #1E63D4;
+  --secondary: #34D399;
+  --background: #0F172A;
+  --surface: #1E293B;
+  --text: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --accent: #7C3AED;
+}
+
 /* Base Styles */
 .home {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
-  color: #ffffff;
+  background-color: var(--background);
+  color: var(--text);
   overflow-x: hidden;
 }
 
-/* Animated Background */
-.animated-bg {
+.background-gradient {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background: radial-gradient(
+    circle at top right,
+    rgba(124, 58, 237, 0.1),
+    rgba(45, 127, 250, 0.1),
+    transparent 60%
+  );
   z-index: 0;
-}
-
-.grid-overlay {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-image: 
-    linear-gradient(to right, rgba(0, 255, 157, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 255, 157, 0.1) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: radial-gradient(circle at 50% 50%, black 0%, transparent 70%);
-}
-
-/* Glass Panel Effect */
-.glass-panel {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 2rem;
-  margin: 2rem;
 }
 
 /* Hero Section */
@@ -267,65 +236,87 @@ onUnmounted(() => {
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  padding: 2rem;
+  gap: 4rem;
+  padding: 4rem;
   position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.glitch-title {
-  font-size: 4rem;
-  font-weight: bold;
-  text-transform: uppercase;
+.main-title {
+  font-size: 4.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
   position: relative;
-  text-shadow: 
-    0.05em 0 0 rgba(255, 0, 0, 0.75),
-    -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-    0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-  animation: glitch 1s infinite;
+  background: linear-gradient(to right, var(--text), var(--text-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* Cyber Button */
-.cyber-button {
-  --primary: #00ff9d;
-  --shadow-primary: #00cc7d;
-  
-  padding: 1rem 3rem;
-  color: var(--primary);
-  background: transparent;
-  border: 2px solid var(--primary);
-  text-transform: uppercase;
-  font-weight: bold;
-  letter-spacing: 2px;
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  margin-bottom: 3rem;
+}
+
+/* Modern Button Styles */
+.primary-button {
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   overflow: hidden;
-  transition: 0.3s;
-  cursor: pointer;
 }
 
-.cyber-button:hover {
-  background: var(--primary);
-  color: #000;
-  box-shadow: 0 0 30px var(--shadow-primary);
+.primary-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45, 127, 250, 0.3);
+}
+
+.button-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: translateX(-100%);
+}
+
+.primary-button:hover .button-glow {
+  animation: button-shine 1.5s infinite;
 }
 
 /* Aircraft Cards */
 .aircraft-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 2rem;
-  padding: 1rem;
+  padding: 2rem;
 }
 
 .aircraft-card {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 15px;
+  background: var(--surface);
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.aircraft-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
 }
 
 .card-image {
   position: relative;
-  height: 200px;
+  height: 240px;
   overflow: hidden;
 }
 
@@ -333,88 +324,86 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease;
 }
 
 .aircraft-card:hover .card-image img {
   transform: scale(1.1);
 }
 
-/* Neo Button */
-.neo-button {
-  padding: 0.8rem 1.5rem;
-  background: linear-gradient(145deg, #1e1e1e, #0a0a0a);
-  border: none;
-  border-radius: 10px;
-  color: #00ff9d;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.5rem;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
 }
 
-.neo-button:hover {
-  background: linear-gradient(145deg, #0a0a0a, #1e1e1e);
-  box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+.card-content {
+  padding: 1.5rem;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero {
-    grid-template-columns: 1fr;
-  }
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
 
-  .glitch-title {
-    font-size: 2.5rem;
-  }
+/* Update Cards */
+.updates-section {
+  padding: 4rem 2rem;
+  background: linear-gradient(to bottom, transparent, var(--surface));
+}
 
-  .aircraft-grid {
-    grid-template-columns: 1fr;
-  }
+.update-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.update-card:hover {
+  transform: translateY(-4px);
+}
+
+/* Tags */
+.tag {
+  background: rgba(124, 58, 237, 0.2);
+  color: var(--accent);
+  padding: 0.25rem 0.75rem;
+  border-radius: 100px;
+  font-size: 0.875rem;
+  font-weight: 500;
 }
 
 /* Animations */
-@keyframes glitch {
-  0% {
-    text-shadow: 
-      0.05em 0 0 rgba(255, 0, 0, 0.75),
-      -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
-      -0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-  }
-  14% {
-    text-shadow: 
-      0.05em 0 0 rgba(255, 0, 0, 0.75),
-      -0.05em -0.025em 0 rgba(0, 255, 0, 0.75),
-      -0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-  }
-  15% {
-    text-shadow: 
-      -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-      0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-      -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
-  }
-  49% {
-    text-shadow: 
-      -0.05em -0.025em 0 rgba(255, 0, 0, 0.75),
-      0.025em 0.025em 0 rgba(0, 255, 0, 0.75),
-      -0.05em -0.05em 0 rgba(0, 0, 255, 0.75);
-  }
-  50% {
-    text-shadow: 
-      0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
-      0.05em 0 0 rgba(0, 255, 0, 0.75),
-      0 -0.05em 0 rgba(0, 0, 255, 0.75);
-  }
-  99% {
-    text-shadow: 
-      0.025em 0.05em 0 rgba(255, 0, 0, 0.75),
-      0.05em 0 0 rgba(0, 255, 0, 0.75),
-      0 -0.05em 0 rgba(0, 0, 255, 0.75);
-  }
+@keyframes button-shine {
   100% {
-    text-shadow: 
-      -0.025em 0 0 rgba(255, 0, 0, 0.75),
-      -0.025em -0.025em 0 rgba(0, 255, 0, 0.75),
-      -0.025em -0.05em 0 rgba(0, 0, 255, 0.75);
+    transform: translateX(100%);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 2rem;
+  }
+
+  .main-title {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .aircraft-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>
