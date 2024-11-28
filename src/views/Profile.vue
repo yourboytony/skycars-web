@@ -161,18 +161,18 @@
           <h2>Buy Credits</h2>
           <div class="credit-packages">
             <div 
-              v-for="package in creditPackages"
-              :key="package.credits"
+              v-for="creditPackage in creditPackages"
+              :key="creditPackage.id"
               class="credit-package"
-              :class="{ selected: selectedPackage === package }"
-              @click="selectedPackage = package"
+              :class="{ selected: selectedCreditPackage === creditPackage }"
+              @click="selectedCreditPackage = creditPackage"
             >
               <div class="package-amount">
                 <i class="fas fa-coins"></i>
-                {{ package.credits }} Credits
+                {{ creditPackage.credits }} Credits
               </div>
               <div class="package-price">
-                ${{ package.price.toFixed(2) }}
+                ${{ creditPackage.price.toFixed(2) }}
               </div>
             </div>
           </div>
@@ -185,7 +185,7 @@
             </button>
             <button 
               class="buy-btn"
-              :disabled="!selectedPackage"
+              :disabled="!selectedCreditPackage"
               @click="purchaseCredits"
             >
               Buy Now
@@ -197,7 +197,7 @@
   </template>
   
   <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRouter } from 'vue-router'
   import { useAuthStore } from '../stores/auth'
   import { useMarketplaceStore } from '../stores/marketplace'
@@ -206,30 +206,48 @@
   const auth = useAuthStore()
   const marketplace = useMarketplaceStore()
   
+  // State
   const currentTab = ref('listings')
+  const showBuyCredits = ref(false)
+  const selectedCreditPackage = ref(null)
   const myListings = ref([])
   const transactions = ref([])
-  const showBuyCredits = ref(false)
-  const selectedPackage = ref(null)
   
-  const tabs = [
-    { id: 'listings', name: 'My Listings', icon: 'fas fa-list' },
-    { id: 'favorites', name: 'Favorites', icon: 'fas fa-heart' },
-    { id: 'transactions', name: 'Transactions', icon: 'fas fa-exchange-alt' }
-  ]
-  
+  // Credit packages
   const creditPackages = [
-    { credits: 1000, price: 9.99 },
-    { credits: 2500, price: 19.99 },
-    { credits: 5000, price: 39.99 },
-    { credits: 10000, price: 69.99 }
+    { id: 1, credits: 1000, price: 9.99 },
+    { id: 2, credits: 2500, price: 19.99 },
+    { id: 3, credits: 5000, price: 39.99 },
+    { id: 4, credits: 10000, price: 74.99 }
   ]
   
-  // Fetch user data
+  // Computed
+  const tabs = computed(() => [
+    {
+      id: 'listings',
+      name: 'My Listings',
+      icon: 'fas fa-list',
+      count: myListings.value.length
+    },
+    {
+      id: 'favorites',
+      name: 'Favorites',
+      icon: 'fas fa-heart',
+      count: marketplace.favorites.length
+    },
+    {
+      id: 'transactions',
+      name: 'Transactions',
+      icon: 'fas fa-history',
+      count: transactions.value.length
+    }
+  ])
+  
+  // Methods
   async function fetchMyListings() {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/users/listings`,
+        `${import.meta.env.VITE_API_URL}/api/listings/mine`,
         {
           headers: {
             'Authorization': `Bearer ${auth.token}`
@@ -248,7 +266,7 @@
   async function fetchTransactions() {
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/users/transactions`,
+        `${import.meta.env.VITE_API_URL}/api/transactions`,
         {
           headers: {
             'Authorization': `Bearer ${auth.token}`
@@ -264,10 +282,7 @@
     }
   }
   
-  // Actions
   async function publishListing(id) {
-    if (!confirm('Are you sure you want to publish this listing?')) return
-  
     try {
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/listings/${id}/publish`,
@@ -312,7 +327,7 @@
   }
   
   async function purchaseCredits() {
-    if (!selectedPackage.value) return
+    if (!selectedCreditPackage.value) return
   
     try {
       // In a real app, this would integrate with a payment processor
@@ -325,7 +340,7 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            amount: selectedPackage.value.credits
+            amount: selectedCreditPackage.value.credits
           })
         }
       )
@@ -333,7 +348,7 @@
       if (response.ok) {
         marketplace.credits = data.credits
         showBuyCredits.value = false
-        selectedPackage.value = null
+        selectedCreditPackage.value = null
         alert('Credits purchased successfully!')
       }
     } catch (error) {
