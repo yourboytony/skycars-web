@@ -1,448 +1,896 @@
 <template>
   <div class="home">
-    <!-- Hero Section with Video Background -->
-    <section class="hero">
-      <div class="video-overlay"></div>
-      <video autoplay muted loop class="hero-video">
-        <source src="https://player.vimeo.com/external/368484050.hd.mp4?s=e63e84fc0ffe8fb5c2e939f6b0fbb42798c137d4&profile_id=175" type="video/mp4">
-      </video>
-      <div class="hero-content">
-        <h1 class="hero-title">SkyCars Collective</h1>
-        <p class="hero-subtitle">Your Premier Flight Simulation Marketplace</p>
-        <div class="hero-cta">
-          <router-link to="/listings" class="cta-button primary">
-            <i class="fas fa-plane"></i>
-            Explore Aircraft
-          </router-link>
-          <router-link to="/register" class="cta-button secondary">
-            <i class="fas fa-user-plus"></i>
-            Join Community
-          </router-link>
-        </div>
-      </div>
-    </section>
+    <InteractiveBackground />
+    
+    <!-- Particle Background -->
+    <div id="particles-js" class="particle-container"></div>
 
-    <!-- Featured Listings Section -->
-    <section class="featured glass">
-      <h2 class="section-title">Featured Aircraft</h2>
-      <div class="featured-grid">
-        <div v-for="item in featuredListings" :key="item.id" class="featured-card">
-          <div class="card-image" :style="{ backgroundImage: `url(${item.image})` }">
-            <div class="card-overlay">
-              <span class="card-simulator">{{ item.simulator }}</span>
-              <span class="card-price">{{ item.price_credits }} Credits</span>
+    <!-- Hero Section with 3D Effect -->
+    <section class="hero">
+      <div class="hero-content" v-motion>
+        <div class="hero-grid">
+          <div class="hero-text" 
+            v-motion
+            :initial="{ opacity: 0, y: 100 }"
+            :enter="{ opacity: 1, y: 0, transition: { delay: 200, duration: 800 } }">
+            <h1 class="glitch" data-text="SkyCars Collective">SkyCars Collective</h1>
+            <p class="cyber-text">Next Generation Flight Simulation Marketplace</p>
+            <div class="hero-stats">
+              <div class="stat-item" v-for="(stat, index) in heroStats" :key="index"
+                v-motion
+                :initial="{ opacity: 0, x: -50 }"
+                :enter="{ opacity: 1, x: 0, transition: { delay: 300 + (index * 100) } }">
+                <span class="stat-value">{{ stat.value }}</span>
+                <span class="stat-label">{{ stat.label }}</span>
+              </div>
             </div>
           </div>
-          <div class="card-content">
-            <h3>{{ item.title }}</h3>
-            <p>{{ item.description }}</p>
-            <router-link :to="`/listings/${item.id}`" class="card-button">
-              View Details
-            </router-link>
+          <div class="hero-model">
+            <canvas id="aircraft-model"></canvas>
+          </div>
+        </div>
+        
+        <div class="hero-cta">
+          <button class="cyber-button" @click="scrollToExplore">
+            <span class="cyber-button__glitch"></span>
+            <span class="cyber-button__tag">v2.4</span>
+            Explore Aircraft
+          </button>
+          <button class="cyber-button secondary">
+            <span class="cyber-button__glitch"></span>
+            <span class="cyber-button__tag">New</span>
+            Join Community
+          </button>
+        </div>
+      </div>
+      
+      <div class="hero-scroll-indicator">
+        <div class="mouse">
+          <div class="wheel"></div>
+        </div>
+        <div class="scroll-arrows">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Featured Aircraft Slider -->
+    <section class="featured-section glass-morphism">
+      <h2 class="section-title cyber-glitch" data-text="Featured Aircraft">
+        Featured Aircraft
+      </h2>
+      
+      <swiper-container class="featured-slider"
+        :slides-per-view="'auto'"
+        :space-between="30"
+        :centered-slides="true"
+        :pagination="true"
+        :autoplay="{ delay: 3000 }">
+        <swiper-slide v-for="aircraft in featuredAircraft" :key="aircraft.id">
+          <div class="aircraft-card" 
+            @mouseenter="playHoverAnimation"
+            @mouseleave="resetHoverAnimation">
+            <div class="card-image">
+              <img :src="aircraft.image" :alt="aircraft.name">
+              <div class="card-overlay"></div>
+              <div class="card-specs">
+                <span class="spec-item">
+                  <i class="fas fa-tachometer-alt"></i>
+                  {{ aircraft.speed }} KTAS
+                </span>
+                <span class="spec-item">
+                  <i class="fas fa-arrows-alt-v"></i>
+                  {{ aircraft.ceiling }} ft
+                </span>
+                <span class="spec-item">
+                  <i class="fas fa-gas-pump"></i>
+                  {{ aircraft.range }} nm
+                </span>
+              </div>
+            </div>
+            <div class="card-content">
+              <h3>{{ aircraft.name }}</h3>
+              <p>{{ aircraft.description }}</p>
+              <div class="card-footer">
+                <span class="price">{{ aircraft.price }} Credits</span>
+                <button class="cyber-button small">
+                  View Details
+                </button>
+              </div>
+            </div>
+          </div>
+        </swiper-slide>
+      </swiper-container>
+    </section>
+
+    <!-- Weather Integration -->
+    <section class="weather-section glass-morphism">
+      <div class="weather-grid">
+        <div class="weather-title">
+          <h2 class="cyber-glitch" data-text="Live Weather">Live Weather</h2>
+          <p class="cyber-text">Real-time METAR data for your virtual flights</p>
+        </div>
+        
+        <div class="weather-content">
+          <Weather class="weather-widget" />
+          
+          <div class="weather-map">
+            <div class="map-container glass-morphism">
+              <!-- Weather radar animation here -->
+              <div class="radar-sweep"></div>
+              <div class="map-markers">
+                <!-- Dynamic weather markers -->
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Weather Section -->
-    <section class="weather-section">
-      <Weather />
-    </section>
-
-    <!-- Statistics Section with Parallax -->
-    <section class="statistics parallax">
-      <div class="stats-grid">
-        <div class="stat-card glass">
-          <i class="fas fa-plane"></i>
-          <h3>{{ stats.aircraft }}+</h3>
-          <p>Aircraft Available</p>
-        </div>
-        <div class="stat-card glass">
-          <i class="fas fa-users"></i>
-          <h3>{{ stats.users }}+</h3>
-          <p>Active Pilots</p>
-        </div>
-        <div class="stat-card glass">
-          <i class="fas fa-download"></i>
-          <h3>{{ stats.downloads }}+</h3>
-          <p>Downloads</p>
-        </div>
-        <div class="stat-card glass">
-          <i class="fas fa-star"></i>
-          <h3>{{ stats.rating }}</h3>
-          <p>Average Rating</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Latest News Section -->
-    <section class="news glass">
-      <h2 class="section-title">Latest Updates</h2>
-      <div class="news-grid">
-        <article v-for="post in latestNews" :key="post.id" class="news-card">
-          <div class="news-image" :style="{ backgroundImage: `url(${post.image})` }"></div>
-          <div class="news-content">
-            <span class="news-date">{{ formatDate(post.date) }}</span>
-            <h3>{{ post.title }}</h3>
-            <p>{{ post.excerpt }}</p>
-            <a href="#" class="news-link">Read More</a>
+    <!-- Statistics with 3D Parallax -->
+    <section class="stats-section">
+      <div class="stats-parallax" ref="statsParallax">
+        <div class="stats-grid">
+          <div v-for="(stat, index) in statistics" 
+               :key="index" 
+               class="stat-card glass-morphism"
+               v-motion
+               :initial="{ opacity: 0, scale: 0.8 }"
+               :enter="{ opacity: 1, scale: 1, transition: { delay: index * 100 } }">
+            <div class="stat-icon">
+              <i :class="stat.icon"></i>
+            </div>
+            <div class="stat-info">
+              <h3 class="cyber-text">{{ stat.value }}</h3>
+              <p>{{ stat.label }}</p>
+            </div>
+            <div class="stat-graph">
+              <!-- Dynamic graph animation -->
+              <canvas :ref="`graph${index}`"></canvas>
+            </div>
           </div>
-        </article>
-      </div>
-    </section>
-
-    <!-- Community Section -->
-    <section class="community">
-      <div class="community-content glass">
-        <h2 class="section-title">Join Our Community</h2>
-        <p class="community-text">
-          Connect with fellow aviation enthusiasts, share experiences, and explore
-          the world of flight simulation together.
-        </p>
-        <div class="community-links">
-          <a href="#" class="social-link discord">
-            <i class="fab fa-discord"></i>
-            Join Discord
-          </a>
-          <a href="#" class="social-link youtube">
-            <i class="fab fa-youtube"></i>
-            Watch Tutorials
-          </a>
-          <a href="#" class="social-link forum">
-            <i class="fas fa-comments"></i>
-            Visit Forum
-          </a>
         </div>
       </div>
     </section>
+
+    <!-- Latest Releases -->
+    <section class="releases-section glass-morphism">
+      <h2 class="section-title cyber-glitch" data-text="Latest Releases">
+        Latest Releases
+      </h2>
+      
+      <div class="releases-grid">
+        <div v-for="release in latestReleases" 
+             :key="release.id" 
+             class="release-card"
+             @mouseenter="playCardAnimation">
+          <div class="release-image">
+            <img :src="release.image" :alt="release.title">
+            <div class="release-overlay"></div>
+            <div class="release-date cyber-text">{{ release.date }}</div>
+          </div>
+          <div class="release-content">
+            <h3>{{ release.title }}</h3>
+            <p>{{ release.description }}</p>
+            <div class="release-meta">
+              <span class="release-simulator">{{ release.simulator }}</span>
+              <span class="release-rating">
+                <i class="fas fa-star"></i>
+                {{ release.rating }}
+              </span>
+            </div>
+            <button class="cyber-button small">
+              Learn More
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Community Hub -->
+    <section class="community-section">
+      <div class="community-grid glass-morphism">
+        <div class="community-content">
+          <h2 class="cyber-glitch" data-text="Join The Squadron">
+            Join The Squadron
+          </h2>
+          <p class="cyber-text">Connect with pilots worldwide</p>
+          
+          <div class="community-stats">
+            <div class="community-stat">
+              <span class="stat-number">15K+</span>
+              <span class="stat-label">Active Pilots</span>
+            </div>
+            <div class="community-stat">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Daily Events</span>
+            </div>
+          </div>
+
+          <div class="community-cta">
+            <button class="cyber-button discord">
+              <i class="fab fa-discord"></i>
+              Join Discord
+            </button>
+            <button class="cyber-button forum">
+              <i class="fas fa-comments"></i>
+              Community Forum
+            </button>
+          </div>
+        </div>
+
+        <div class="community-feed">
+          <div class="feed-header">
+            <h3>Live Activity</h3>
+          </div>
+          <div class="feed-content">
+            <div v-for="activity in communityFeed" 
+                 :key="activity.id" 
+                 class="feed-item glass-morphism">
+              <div class="feed-avatar">
+                <img :src="activity.avatar" :alt="activity.user">
+              </div>
+              <div class="feed-details">
+                <span class="feed-user">{{ activity.user }}</span>
+                <span class="feed-action">{{ activity.action }}</span>
+                <span class="feed-time">{{ activity.time }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Enhanced 3D Model Interaction -->
+    <div class="model-controls" v-if="modelLoaded">
+      <button @click="rotateModel('left')" class="control-btn">
+        <i class="fas fa-arrow-left"></i>
+      </button>
+      <button @click="rotateModel('right')" class="control-btn">
+        <i class="fas fa-arrow-right"></i>
+      </button>
+      <button @click="zoomModel('in')" class="control-btn">
+        <i class="fas fa-plus"></i>
+      </button>
+      <button @click="zoomModel('out')" class="control-btn">
+        <i class="fas fa-minus"></i>
+      </button>
+    </div>
+
+    <!-- Interactive Features Section -->
+    <section class="features-section glass-morphism">
+      <div class="features-grid">
+        <div v-for="feature in features" 
+             :key="feature.id" 
+             class="feature-card"
+             @mouseenter="activateFeature(feature.id)"
+             @mouseleave="deactivateFeature(feature.id)">
+          <div class="feature-icon">
+            <i :class="feature.icon"></i>
+          </div>
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+          <div class="feature-details" v-show="feature.active">
+            <!-- Additional feature content -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- To be continued in next part... -->
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import Weather from '../components/Weather.vue'
+import { onMounted, ref, onUnmounted } from 'vue'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import particlesJS from 'particles.js'
+import { register } from 'swiper/element/bundle'
+import InteractiveBackground from '../components/InteractiveBackground.vue'
+import { useInteractiveScene } from '../composables/useInteractiveScene'
+import { useParticleSystem } from '../composables/useParticleSystem'
 
-// Sample data with online images
-const featuredListings = ref([
-  {
-    id: 1,
-    title: 'Boeing 737 MAX',
-    simulator: 'MSFS',
-    price_credits: 2500,
-    image: 'https://images.unsplash.com/photo-1520437358207-323b43b50729?w=800',
-    description: 'Ultra-realistic Boeing 737 MAX with custom sounds and effects.'
-  },
-  {
-    id: 2,
-    title: 'Airbus A320neo',
-    simulator: 'X-Plane 12',
-    price_credits: 3000,
-    image: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800',
-    description: 'Study-level A320neo with advanced systems simulation.'
-  },
-  {
-    id: 3,
-    title: 'Cessna 172',
-    simulator: 'MSFS',
-    price_credits: 1500,
-    image: 'https://images.unsplash.com/photo-1583362604314-4f11a30b8669?w=800',
-    description: 'Classic training aircraft with realistic flight dynamics.'
-  }
+gsap.registerPlugin(ScrollTrigger)
+register()
+
+// State
+const heroStats = ref([
+  { value: '250+', label: 'Aircraft' },
+  { value: '10K+', label: 'Pilots' },
+  { value: '99.9%', label: 'Uptime' },
+  { value: '24/7', label: 'Support' }
 ])
 
-const stats = ref({
-  aircraft: 250,
-  users: 10000,
-  downloads: 25000,
-  rating: 4.9
-})
-
-const latestNews = ref([
+const featuredAircraft = ref([
   {
     id: 1,
-    title: 'New A320neo Release',
-    date: '2024-03-15',
-    image: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?w=800',
-    excerpt: 'Experience the next generation of aviation with our latest A320neo release.'
+    name: 'F-35 Lightning II',
+    image: 'https://images.unsplash.com/photo-1580824456266-c578f254e8af?w=800',
+    speed: '1200',
+    ceiling: '50000',
+    range: '1500',
+    price: '5000',
+    description: 'Ultra-realistic 5th generation fighter with advanced systems.'
   },
-  {
-    id: 2,
-    title: 'Weather System Update',
-    date: '2024-03-10',
-    image: 'https://images.unsplash.com/photo-1534088568595-a066f410bcda?w=800',
-    excerpt: 'Enhanced weather system with real-time METAR integration now available.'
-  },
-  {
-    id: 3,
-    title: 'Community Event',
-    date: '2024-03-05',
-    image: 'https://images.unsplash.com/photo-1559627755-42213a258052?w=800',
-    excerpt: 'Join our virtual airshow featuring the best aircraft from our marketplace.'
-  }
+  // Add more aircraft...
 ])
 
-function formatDate(date) {
-  return new Date(date).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  })
-}
+// Three.js Setup
+let scene, camera, renderer, model;
 
-// Animation on scroll
+const { createEnhancedScene, sceneReady } = useInteractiveScene()
+const { createAdvancedParticles } = useParticleSystem()
+
+// Model interaction state
+const modelLoaded = ref(false)
+const modelRotation = ref({ x: 0, y: 0 })
+const modelZoom = ref(5)
+
+// Features data
+const features = ref([
+  {
+    id: 1,
+    title: 'Real-time Weather',
+    icon: 'fas fa-cloud-sun',
+    description: 'Live METAR data integration',
+    active: false
+  },
+  // Add more features...
+])
+
 onMounted(() => {
-  // Intersection Observer for animations
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate')
-        entry.target.classList.add('loaded')
-      }
-    })
-  }, { threshold: 0.1 })
+  initThree()
+  initParticles()
+  initAnimations()
+  // Initialize enhanced scene
+  const { scene, camera, renderer, composer } = createEnhancedScene(
+    document.getElementById('aircraft-model')
+  )
+  
+  // Initialize particles
+  createAdvancedParticles('particles-js')
+  
+  // Add more initialization code...
+})
 
-  // Observe all sections and cards
-  document.querySelectorAll('section, .featured-card, .news-card').forEach(element => {
-    observer.observe(element)
+function initThree() {
+  scene = new THREE.Scene()
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
+  
+  renderer = new THREE.WebGLRenderer({
+    canvas: document.getElementById('aircraft-model'),
+    alpha: true
+  })
+  
+  renderer.setSize(window.innerWidth / 2, window.innerHeight / 2)
+  
+  // Add lights
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+  scene.add(ambientLight)
+  
+  const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+  directionalLight.position.set(5, 5, 5)
+  scene.add(directionalLight)
+  
+  // Load 3D model
+  const loader = new GLTFLoader()
+  loader.load(
+    '/models/aircraft.glb',
+    (gltf) => {
+      model = gltf.scene
+      scene.add(model)
+      
+      // Position camera
+      camera.position.z = 5
+      
+      // Start animation loop
+      animate()
+    }
+  )
+}
+
+function animate() {
+  requestAnimationFrame(animate)
+  
+  if (model) {
+    model.rotation.y += 0.005
+  }
+  
+  renderer.render(scene, camera)
+}
+
+function initParticles() {
+  particlesJS('particles-js', {
+    particles: {
+      number: {
+        value: 100,
+        density: {
+          enable: true,
+          value_area: 800
+        }
+      },
+      color: {
+        value: '#00ff9d'
+      },
+      shape: {
+        type: 'circle'
+      },
+      opacity: {
+        value: 0.5,
+        random: true
+      },
+      size: {
+        value: 3,
+        random: true
+      },
+      line_linked: {
+        enable: true,
+        distance: 150,
+        color: '#00ff9d',
+        opacity: 0.4,
+        width: 1
+      },
+      move: {
+        enable: true,
+        speed: 2,
+        direction: 'none',
+        random: true,
+        straight: false,
+        out_mode: 'out',
+        bounce: false
+      }
+    },
+    interactivity: {
+      detect_on: 'canvas',
+      events: {
+        onhover: {
+          enable: true,
+          mode: 'repulse'
+        },
+        onclick: {
+          enable: true,
+          mode: 'push'
+        },
+        resize: true
+      }
+    },
+    retina_detect: true
+  })
+}
+
+function initAnimations() {
+  // GSAP Animations
+  gsap.from('.hero-content', {
+    duration: 1,
+    y: 100,
+    opacity: 0,
+    ease: 'power4.out'
   })
 
-  // Preload hero video
-  const video = document.querySelector('.hero-video')
-  if (video) {
-    video.load()
+  // Scroll Triggers
+  ScrollTrigger.batch('.aircraft-card', {
+    onEnter: (elements) => {
+      gsap.from(elements, {
+        y: 50,
+        opacity: 0,
+        stagger: 0.15,
+        duration: 1,
+        ease: 'power4.out'
+      })
+    }
+  })
+}
+
+// Cleanup
+onUnmounted(() => {
+  if (renderer) {
+    renderer.dispose()
+  }
+  if (scene) {
+    scene.clear()
   }
 })
 
-// Add image loading optimization
-function handleImageLoad(event) {
-  event.target.closest('.featured-card, .news-card')?.classList.add('loaded')
+// Model controls
+function rotateModel(direction) {
+  const rotation = direction === 'left' ? -0.1 : 0.1
+  if (model) {
+    gsap.to(model.rotation, {
+      y: model.rotation.y + rotation,
+      duration: 0.5,
+      ease: 'power2.out'
+    })
+  }
 }
+
+function zoomModel(direction) {
+  const newZoom = direction === 'in' ? 
+    Math.max(2, modelZoom.value - 1) : 
+    Math.min(8, modelZoom.value + 1)
+  
+  gsap.to(camera.position, {
+    z: newZoom,
+    duration: 0.5,
+    ease: 'power2.out',
+    onUpdate: () => {
+      modelZoom.value = camera.position.z
+    }
+  })
+}
+
+// Feature interaction
+function activateFeature(id) {
+  const feature = features.value.find(f => f.id === id)
+  if (feature) {
+    feature.active = true
+    gsap.to(`#feature-${id}`, {
+      scale: 1.05,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+function deactivateFeature(id) {
+  const feature = features.value.find(f => f.id === id)
+  if (feature) {
+    feature.active = false
+    gsap.to(`#feature-${id}`, {
+      scale: 1,
+      duration: 0.3,
+      ease: 'power2.out'
+    })
+  }
+}
+
+// To be continued in next part...
 </script>
 
 <style scoped>
+/* Base Styles */
+:root {
+  --primary: #00ff9d;
+  --secondary: #0066ff;
+  --accent: #ff00ff;
+  --background: #0a0a0a;
+  --text: #ffffff;
+  --glass: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+}
+
+.home {
+  background: var(--background);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Glassmorphism */
+.glass-morphism {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Cyber Button */
+.cyber-button {
+  --cb-color: var(--primary);
+  --cb-hover-color: var(--accent);
+  position: relative;
+  padding: 20px 40px;
+  color: var(--cb-color);
+  background: transparent;
+  border: 2px solid var(--cb-color);
+  border-radius: 8px;
+  text-transform: uppercase;
+  font-weight: bold;
+  letter-spacing: 2px;
+  overflow: hidden;
+  transition: 0.3s;
+  cursor: pointer;
+}
+
+.cyber-button:hover {
+  color: var(--background);
+  background: var(--cb-hover-color);
+  border-color: var(--cb-hover-color);
+  box-shadow: 0 0 20px var(--cb-hover-color);
+}
+
+.cyber-button__glitch {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--cb-color);
+  transform: translateX(-100%);
+  transition: 0.3s;
+}
+
+.cyber-button:hover .cyber-button__glitch {
+  transform: translateX(100%);
+}
+
+/* Glitch Text Effect */
+.cyber-glitch {
+  position: relative;
+  color: var(--text);
+  font-size: 4rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 0.05em 0 0 var(--accent),
+              -0.025em -0.05em 0 var(--primary),
+              0.025em 0.05em 0 var(--secondary);
+  animation: glitch 1s infinite;
+}
+
+@keyframes glitch {
+  0% {
+    text-shadow: 0.05em 0 0 var(--accent),
+                -0.025em -0.05em 0 var(--primary),
+                0.025em 0.05em 0 var(--secondary);
+  }
+  14% {
+    text-shadow: 0.05em 0 0 var(--accent),
+                -0.025em -0.05em 0 var(--primary),
+                0.025em 0.05em 0 var(--secondary);
+  }
+  15% {
+    text-shadow: -0.05em -0.025em 0 var(--accent),
+                0.025em 0.025em 0 var(--primary),
+                -0.05em -0.05em 0 var(--secondary);
+  }
+  49% {
+    text-shadow: -0.05em -0.025em 0 var(--accent),
+                0.025em 0.025em 0 var(--primary),
+                -0.05em -0.05em 0 var(--secondary);
+  }
+  50% {
+    text-shadow: 0.025em 0.05em 0 var(--accent),
+                0.05em 0 0 var(--primary),
+                0 -0.05em 0 var(--secondary);
+  }
+  99% {
+    text-shadow: 0.025em 0.05em 0 var(--accent),
+                0.05em 0 0 var(--primary),
+                0 -0.05em 0 var(--secondary);
+  }
+  100% {
+    text-shadow: -0.025em 0 0 var(--accent),
+                -0.025em -0.025em 0 var(--primary),
+                -0.025em -0.05em 0 var(--secondary);
+  }
+}
+
+/* Particle Background */
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
 /* Hero Section */
 .hero {
-  height: 100vh;
   position: relative;
-  overflow: hidden;
+  min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: white;
-}
-
-.hero-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: -2;
-}
-
-.video-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    rgba(0, 0, 0, 0.5),
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 0, 0, 0.5)
-  );
-  z-index: -1;
-}
-
-.hero-content {
-  text-align: center;
-  max-width: 800px;
   padding: 2rem;
+  overflow: hidden;
 }
 
-.hero-title {
-  font-size: 4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  margin-bottom: 2rem;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-}
-
-/* Featured Section */
-.featured {
-  padding: 4rem 2rem;
-  margin: 2rem;
-  border-radius: 1rem;
-}
-
-.section-title {
-  text-align: center;
-  margin-bottom: 3rem;
-  color: var(--text-color);
-  font-size: 2.5rem;
-}
-
-.featured-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-/* Statistics Section */
-.statistics {
-  padding: 6rem 2rem;
-  background-attachment: fixed;
-  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-    url('https://images.unsplash.com/photo-1517479149777-5f3b1511d5ad?w=1920');
-  background-size: cover;
-  background-position: center;
-  color: white;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.stat-card {
-  text-align: center;
-  padding: 2rem;
-  border-radius: 1rem;
-}
-
-.stat-card i {
-  font-size: 2.5rem;
-  color: var(--primary-color);
-  margin-bottom: 1rem;
-}
-
-.stat-card h3 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-/* News Section */
-.news {
-  padding: 4rem 2rem;
-  margin: 2rem;
-  border-radius: 1rem;
-}
-
-.news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-/* Community Section */
-.community {
-  padding: 4rem 2rem;
-  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-  color: white;
-}
-
-.community-content {
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 2rem;
-  border-radius: 1rem;
-}
-
-.community-links {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-section {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-section.animate {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .section-title {
-    font-size: 2rem;
-  }
-
-  .community-links {
-    flex-direction: column;
-    gap: 1rem;
-  }
-}
-
-/* Add loading states for images */
-.card-image {
-  position: relative;
-  height: 200px;
-  background-color: var(--background-secondary);
-  background-size: cover;
-  background-position: center;
-  border-radius: 0.5rem 0.5rem 0 0;
-  transition: all 0.3s ease;
-}
-
-.card-image::before {
+.hero::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, 
+    rgba(0, 255, 157, 0.1),
+    rgba(0, 102, 255, 0.1));
+  animation: gradientShift 10s ease infinite;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.hero-text {
+  z-index: 1;
+}
+
+.hero-model {
+  position: relative;
+  height: 600px;
+}
+
+/* Aircraft Cards */
+.aircraft-card {
+  position: relative;
+  width: 400px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.aircraft-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 255, 157, 0.2);
+}
+
+.card-image {
+  position: relative;
+  height: 250px;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.aircraft-card:hover .card-image img {
+  transform: scale(1.1);
+}
+
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.7) 100%
+    transparent,
+    rgba(10, 10, 10, 0.8)
   );
-  border-radius: 0.5rem 0.5rem 0 0;
 }
 
-/* Add lazy loading for images */
-.featured-card, .news-card {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+.card-specs {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-around;
+  color: var(--text);
+  z-index: 1;
 }
 
-.featured-card.loaded, .news-card.loaded {
-  opacity: 1;
-  transform: translateY(0);
+/* Weather Section */
+.weather-section {
+  padding: 4rem 2rem;
+  margin: 2rem;
+}
+
+.weather-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 2rem;
+}
+
+.radar-sweep {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 50%,
+    rgba(0, 255, 157, 0.2) 100%
+  );
+  animation: radarSweep 4s linear infinite;
+}
+
+@keyframes radarSweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Stats Section */
+.stats-section {
+  position: relative;
+  padding: 6rem 2rem;
+  perspective: 1000px;
+}
+
+.stats-parallax {
+  transform-style: preserve-3d;
+}
+
+.stat-card {
+  position: relative;
+  padding: 2rem;
+  transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateZ(20px);
+}
+
+/* Community Section */
+.community-section {
+  position: relative;
+  padding: 4rem 2rem;
+  background: linear-gradient(
+    45deg,
+    rgba(0, 255, 157, 0.1),
+    rgba(0, 102, 255, 0.1)
+  );
+}
+
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.feed-item:hover {
+  transform: scale(1.02);
+}
+
+/* Animations */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-model {
+    height: 400px;
+  }
+}
+
+@media (max-width: 768px) {
+  .cyber-glitch {
+    font-size: 2.5rem;
+  }
+
+  .weather-grid,
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aircraft-card {
+    width: 100%;
+  }
 }
 </style>
