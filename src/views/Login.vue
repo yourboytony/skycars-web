@@ -3,6 +3,12 @@
     <div class="auth-container">
       <div class="auth-box glass">
         <h1>Login</h1>
+        
+        <!-- General Error Message -->
+        <div v-if="errors.general" class="error-banner">
+          {{ errors.general }}
+        </div>
+
         <form @submit.prevent="handleSubmit">
           <div class="form-group">
             <label for="email">Email</label>
@@ -52,10 +58,12 @@
 import { ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useMarketplaceStore } from '../stores/marketplace'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
+const marketplace = useMarketplaceStore()
 
 const form = ref({
   email: '',
@@ -71,11 +79,21 @@ async function handleSubmit() {
 
   try {
     await auth.login(form.value)
+    
+    // Fetch initial marketplace data
+    if (auth.isAuthenticated()) {
+      await marketplace.fetchCredits()
+    }
+    
+    // Redirect to intended destination or home
     const redirectPath = route.query.redirect || '/'
-    router.push(redirectPath)
+    await router.push(redirectPath)
   } catch (error) {
+    console.error('Login error:', error)
     if (error.response?.data?.errors) {
       errors.value = error.response.data.errors
+    } else if (error.response?.data?.message) {
+      errors.value.general = error.response.data.message
     } else {
       errors.value.general = 'Login failed. Please try again.'
     }
@@ -83,4 +101,17 @@ async function handleSubmit() {
     isLoading.value = false
   }
 }
-</script> 
+</script>
+
+<style scoped>
+/* Previous styles... */
+
+.error-banner {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--error-color);
+  border-radius: 0.5rem;
+  text-align: center;
+}
+</style> 
