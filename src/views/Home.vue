@@ -284,54 +284,18 @@
 </template>
 
 <script setup>
-import { onMounted, ref, onUnmounted } from 'vue'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import * as THREE from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
-import particlesJS from 'particles.js'
-import { register } from 'swiper/element/bundle'
+// Remove or comment out problematic imports temporarily
+// import { gsap } from 'gsap'
+import { ref, onMounted } from 'vue'
 import InteractiveBackground from '../components/InteractiveBackground.vue'
-import { useInteractiveScene } from '../composables/useInteractiveScene'
-import { useParticleSystem } from '../composables/useParticleSystem'
+import Weather from '../components/Weather.vue'
 
-gsap.registerPlugin(ScrollTrigger)
-register()
-
-// State
-const heroStats = ref([
-  { value: '250+', label: 'Aircraft' },
-  { value: '10K+', label: 'Pilots' },
-  { value: '99.9%', label: 'Uptime' },
-  { value: '24/7', label: 'Support' }
-])
-
-const featuredAircraft = ref([
-  {
-    id: 1,
-    name: 'F-35 Lightning II',
-    image: 'https://images.unsplash.com/photo-1580824456266-c578f254e8af?w=800',
-    speed: '1200',
-    ceiling: '50000',
-    range: '1500',
-    price: '5000',
-    description: 'Ultra-realistic 5th generation fighter with advanced systems.'
-  },
-  // Add more aircraft...
-])
-
-// Three.js Setup
-let scene, camera, renderer, model;
-
-const { createEnhancedScene, sceneReady } = useInteractiveScene()
-const { createAdvancedParticles } = useParticleSystem()
-
-// Model interaction state
+// Use basic animations first
 const modelLoaded = ref(false)
 const modelRotation = ref({ x: 0, y: 0 })
 const modelZoom = ref(5)
 
-// Features data
+// Simplified features data
 const features = ref([
   {
     id: 1,
@@ -339,200 +303,31 @@ const features = ref([
     icon: 'fas fa-cloud-sun',
     description: 'Live METAR data integration',
     active: false
-  },
+  }
   // Add more features...
 ])
 
-onMounted(() => {
-  initThree()
-  initParticles()
-  initAnimations()
-  // Initialize enhanced scene
-  const { scene, camera, renderer, composer } = createEnhancedScene(
-    document.getElementById('aircraft-model')
-  )
-  
-  // Initialize particles
-  createAdvancedParticles('particles-js')
-  
-  // Add more initialization code...
-})
-
-function initThree() {
-  scene = new THREE.Scene()
-  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-  
-  renderer = new THREE.WebGLRenderer({
-    canvas: document.getElementById('aircraft-model'),
-    alpha: true
-  })
-  
-  renderer.setSize(window.innerWidth / 2, window.innerHeight / 2)
-  
-  // Add lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-  scene.add(ambientLight)
-  
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-  directionalLight.position.set(5, 5, 5)
-  scene.add(directionalLight)
-  
-  // Load 3D model
-  const loader = new GLTFLoader()
-  loader.load(
-    '/models/aircraft.glb',
-    (gltf) => {
-      model = gltf.scene
-      scene.add(model)
-      
-      // Position camera
-      camera.position.z = 5
-      
-      // Start animation loop
-      animate()
-    }
-  )
-}
-
-function animate() {
-  requestAnimationFrame(animate)
-  
-  if (model) {
-    model.rotation.y += 0.005
-  }
-  
-  renderer.render(scene, camera)
-}
-
-function initParticles() {
-  particlesJS('particles-js', {
-    particles: {
-      number: {
-        value: 100,
-        density: {
-          enable: true,
-          value_area: 800
-        }
-      },
-      color: {
-        value: '#00ff9d'
-      },
-      shape: {
-        type: 'circle'
-      },
-      opacity: {
-        value: 0.5,
-        random: true
-      },
-      size: {
-        value: 3,
-        random: true
-      },
-      line_linked: {
-        enable: true,
-        distance: 150,
-        color: '#00ff9d',
-        opacity: 0.4,
-        width: 1
-      },
-      move: {
-        enable: true,
-        speed: 2,
-        direction: 'none',
-        random: true,
-        straight: false,
-        out_mode: 'out',
-        bounce: false
-      }
-    },
-    interactivity: {
-      detect_on: 'canvas',
-      events: {
-        onhover: {
-          enable: true,
-          mode: 'repulse'
-        },
-        onclick: {
-          enable: true,
-          mode: 'push'
-        },
-        resize: true
-      }
-    },
-    retina_detect: true
-  })
-}
-
-function initAnimations() {
-  // GSAP Animations
-  gsap.from('.hero-content', {
-    duration: 1,
-    y: 100,
-    opacity: 0,
-    ease: 'power4.out'
-  })
-
-  // Scroll Triggers
-  ScrollTrigger.batch('.aircraft-card', {
-    onEnter: (elements) => {
-      gsap.from(elements, {
-        y: 50,
-        opacity: 0,
-        stagger: 0.15,
-        duration: 1,
-        ease: 'power4.out'
-      })
-    }
-  })
-}
-
-// Cleanup
-onUnmounted(() => {
-  if (renderer) {
-    renderer.dispose()
-  }
-  if (scene) {
-    scene.clear()
-  }
-})
-
-// Model controls
+// Simplified rotation function without GSAP
 function rotateModel(direction) {
   const rotation = direction === 'left' ? -0.1 : 0.1
-  if (model) {
-    gsap.to(model.rotation, {
-      y: model.rotation.y + rotation,
-      duration: 0.5,
-      ease: 'power2.out'
-    })
+  if (modelRotation.value) {
+    modelRotation.value.y += rotation
   }
 }
 
+// Simplified zoom function without GSAP
 function zoomModel(direction) {
   const newZoom = direction === 'in' ? 
     Math.max(2, modelZoom.value - 1) : 
     Math.min(8, modelZoom.value + 1)
-  
-  gsap.to(camera.position, {
-    z: newZoom,
-    duration: 0.5,
-    ease: 'power2.out',
-    onUpdate: () => {
-      modelZoom.value = camera.position.z
-    }
-  })
+  modelZoom.value = newZoom
 }
 
-// Feature interaction
+// Simplified feature interaction
 function activateFeature(id) {
   const feature = features.value.find(f => f.id === id)
   if (feature) {
     feature.active = true
-    gsap.to(`#feature-${id}`, {
-      scale: 1.05,
-      duration: 0.3,
-      ease: 'power2.out'
-    })
   }
 }
 
@@ -540,15 +335,13 @@ function deactivateFeature(id) {
   const feature = features.value.find(f => f.id === id)
   if (feature) {
     feature.active = false
-    gsap.to(`#feature-${id}`, {
-      scale: 1,
-      duration: 0.3,
-      ease: 'power2.out'
-    })
   }
 }
 
-// To be continued in next part...
+onMounted(() => {
+  // Basic initialization
+  console.log('Component mounted')
+})
 </script>
 
 <style scoped>
