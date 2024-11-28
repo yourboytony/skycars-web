@@ -14,6 +14,15 @@
           Browse
         </router-link>
         
+        <!-- Theme Toggle -->
+        <button 
+          class="theme-toggle"
+          @click="toggleTheme"
+          :title="isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        >
+          <i :class="isDark ? 'fas fa-sun' : 'fas fa-moon'"></i>
+        </button>
+        
         <!-- Auth Menu -->
         <template v-if="auth.isAuthenticated()">
           <!-- Credits Display -->
@@ -106,17 +115,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useMarketplaceStore } from '../stores/marketplace'
+import { useThemeStore } from '../stores/theme'
 
 const router = useRouter()
 const auth = useAuthStore()
 const marketplace = useMarketplaceStore()
+const theme = useThemeStore()
 
 const isDropdownOpen = ref(false)
 const dropdown = ref(null)
+
+const isDark = computed(() => theme.isDark)
+
+function toggleTheme() {
+  theme.toggle()
+}
 
 // Close dropdown when clicking outside
 function handleClickOutside(event) {
@@ -153,150 +170,89 @@ onUnmounted(() => {
 
 <style scoped>
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 2rem;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  height: 60px;
   z-index: 1000;
   backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
 }
 
-.logo {
+.nav-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  height: 100%;
+  padding: 0 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.nav-logo {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-color);
   text-decoration: none;
+  transition: color 0.2s;
 }
 
-.logo img {
-  height: 40px;
-  width: auto;
+.nav-logo:hover {
+  color: var(--primary-color);
+}
+
+.nav-logo i {
+  color: var(--primary-color);
 }
 
 .nav-links {
   display: flex;
-  gap: 2rem;
   align-items: center;
+  gap: 1.5rem;
 }
 
-.nav-links a {
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   color: var(--text-color);
   text-decoration: none;
+  transition: color 0.2s;
   font-weight: 500;
-  transition: color 0.3s ease;
 }
 
-.nav-links a:hover {
+.nav-link:hover {
   color: var(--primary-color);
 }
 
-.auth-buttons {
+.nav-link i {
+  font-size: 1.1rem;
+}
+
+.theme-toggle {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: color 0.2s;
   display: flex;
-  gap: 1rem;
   align-items: center;
+  justify-content: center;
 }
 
-.login-btn,
-.logout-btn {
-  color: var(--text-color);
-  text-decoration: none;
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
+.theme-toggle:hover {
+  color: var(--primary-color);
 }
 
-.register-btn,
-.dashboard-btn {
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: white;
-  text-decoration: none;
-  padding: 0.5rem 1.5rem;
-  border-radius: 0.5rem;
-  transition: all 0.3s ease;
-  font-weight: 500;
+.theme-toggle i {
+  font-size: 1.25rem;
 }
 
-.login-btn:hover,
-.logout-btn:hover {
-  background: var(--background-secondary);
-}
-
-.register-btn:hover,
-.dashboard-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.logout-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1rem;
-}
-
-.menu-btn {
-  display: none;
-  background: none;
-  border: none;
-  color: var(--text-color);
-  font-size: 1.5rem;
-  cursor: pointer;
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    padding: 1rem;
-  }
-
-  .logo img {
-    height: 32px;
-  }
-
-  .menu-btn {
-    display: block;
-  }
-
-  .nav-links,
-  .auth-buttons {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--background-secondary);
-    padding: 1rem;
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .nav-links.active,
-  .auth-buttons.active {
-    display: flex;
-  }
-
-  .nav-links a,
-  .auth-buttons a,
-  .auth-buttons button {
-    padding: 0.75rem;
-    text-align: center;
-    width: 100%;
-  }
-
-  .login-btn,
-  .register-btn,
-  .dashboard-btn,
-  .logout-btn {
-    width: 100%;
-    text-align: center;
-    margin: 0.25rem 0;
-  }
-}
-
-/* New Styles */
 .credits-display {
   padding: 0.5rem 1rem;
   background: rgba(var(--primary-rgb), 0.1);
@@ -325,6 +281,28 @@ onUnmounted(() => {
   text-align: center;
 }
 
+.login-btn,
+.register-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+}
+
+.login-btn {
+  background: rgba(var(--primary-rgb), 0.1);
+}
+
+.register-btn {
+  background: var(--primary-color);
+  color: white;
+}
+
+.register-btn:hover {
+  color: white;
+  opacity: 0.9;
+}
+
+/* Dropdown Styles */
 .dropdown {
   position: relative;
 }
@@ -436,8 +414,20 @@ onUnmounted(() => {
 }
 
 @media (max-width: 768px) {
+  .nav-container {
+    padding: 0 1rem;
+  }
+
+  .nav-logo span {
+    display: none;
+  }
+
   .credits-display {
     display: none;
+  }
+
+  .nav-links {
+    gap: 1rem;
   }
 
   .dropdown-menu {
