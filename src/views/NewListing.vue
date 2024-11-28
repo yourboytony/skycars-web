@@ -39,74 +39,54 @@
           <h2>Basic Information</h2>
           
           <div class="form-group">
-            <label for="title">Title</label>
+            <label for="title">Title*</label>
             <input 
               id="title"
               v-model="form.title"
               type="text"
               placeholder="e.g., PMDG 737 for MSFS"
-              :class="{ error: errors.title }"
+              required
             >
-            <span class="error-message" v-if="errors.title">
-              {{ errors.title }}
-            </span>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="simulator">Flight Simulator</label>
-              <select 
-                id="simulator"
-                v-model="form.simulator"
-                :class="{ error: errors.simulator }"
-              >
+              <label for="simulator">Flight Simulator*</label>
+              <select id="simulator" v-model="form.simulator" required>
                 <option value="">Select Simulator</option>
                 <option value="msfs">Microsoft Flight Simulator</option>
                 <option value="xplane">X-Plane</option>
                 <option value="p3d">Prepar3D</option>
                 <option value="fsx">FSX</option>
               </select>
-              <span class="error-message" v-if="errors.simulator">
-                {{ errors.simulator }}
-              </span>
             </div>
 
             <div class="form-group">
-              <label for="aircraft_type">Aircraft Type</label>
-              <select 
-                id="aircraft_type"
-                v-model="form.aircraft_type"
-                :class="{ error: errors.aircraft_type }"
-              >
+              <label for="aircraft_type">Aircraft Type*</label>
+              <select id="aircraft_type" v-model="form.aircraft_type" required>
                 <option value="">Select Type</option>
                 <option value="airliner">Airliner</option>
                 <option value="ga">General Aviation</option>
                 <option value="military">Military</option>
                 <option value="helicopter">Helicopter</option>
               </select>
-              <span class="error-message" v-if="errors.aircraft_type">
-                {{ errors.aircraft_type }}
-              </span>
             </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="developer">Developer</label>
+              <label for="developer">Developer*</label>
               <input 
                 id="developer"
                 v-model="form.developer"
                 type="text"
                 placeholder="e.g., PMDG"
-                :class="{ error: errors.developer }"
+                required
               >
-              <span class="error-message" v-if="errors.developer">
-                {{ errors.developer }}
-              </span>
             </div>
 
             <div class="form-group">
-              <label for="price">Price (Credits)</label>
+              <label for="price">Price (Credits)*</label>
               <input 
                 id="price"
                 v-model.number="form.price_credits"
@@ -114,11 +94,8 @@
                 min="0"
                 step="100"
                 placeholder="e.g., 1000"
-                :class="{ error: errors.price_credits }"
+                required
               >
-              <span class="error-message" v-if="errors.price_credits">
-                {{ errors.price_credits }}
-              </span>
             </div>
           </div>
         </div>
@@ -246,198 +223,29 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
 const route = useRoute()
-const router = useRouter()
 const auth = useAuthStore()
-            <div class="form-group">
-              <label for="category">Category*</label>
-              <select id="category" v-model="form.category" required>
-                <option value="">Select Category</option>
-                <option value="single-engine">Single Engine</option>
-                <option value="multi-engine">Multi Engine</option>
-                <option value="turboprop">Turboprop</option>
-                <option value="jet">Jet</option>
-                <option value="helicopter">Helicopter</option>
-              </select>
-            </div>
 
-            <div class="form-group">
-              <label for="price">Price (USD)*</label>
-              <input 
-                type="number" 
-                id="price" 
-                v-model="form.price" 
-                required
-                min="0"
-                step="1000"
-              >
-            </div>
-          </div>
-        </div>
-
-        <!-- Technical Details -->
-        <div class="form-section">
-          <h2>Technical Details</h2>
-          
-          <div class="form-grid">
-            <div class="form-group">
-              <label for="registration">Registration Number</label>
-              <input 
-                type="text" 
-                id="registration" 
-                v-model="form.registration" 
-                placeholder="e.g., N12345"
-              >
-            </div>
-
-            <div class="form-group">
-              <label for="total_time">Total Time (hours)</label>
-              <input 
-                type="number" 
-                id="total_time" 
-                v-model="form.total_time"
-                min="0"
-              >
-            </div>
-
-            <div class="form-group">
-              <label for="engine_hours">Engine Hours</label>
-              <input 
-                type="number" 
-                id="engine_hours" 
-                v-model="form.engine_hours"
-                min="0"
-              >
-            </div>
-
-            <div class="form-group">
-              <label for="condition">Condition*</label>
-              <select id="condition" v-model="form.condition" required>
-                <option value="">Select Condition</option>
-                <option value="new">New</option>
-                <option value="excellent">Excellent</option>
-                <option value="good">Good</option>
-                <option value="fair">Fair</option>
-                <option value="poor">Poor</option>
-              </select>
-            </div>
-          </div>
-        </div>
-
-        <!-- Location -->
-        <div class="form-section">
-          <h2>Location</h2>
-          
-          <div class="form-group">
-            <label for="location">Location*</label>
-            <input 
-              type="text" 
-              id="location" 
-              v-model="form.location" 
-              required
-              placeholder="e.g., Toronto, ON, Canada"
-            >
-          </div>
-        </div>
-
-        <!-- Description -->
-        <div class="form-section">
-          <h2>Description</h2>
-          
-          <div class="form-group">
-            <label for="description">Description*</label>
-            <textarea 
-              id="description" 
-              v-model="form.description" 
-              required
-              rows="6"
-              placeholder="Provide detailed information about your aircraft..."
-            ></textarea>
-          </div>
-        </div>
-
-        <!-- Submit -->
-        <div class="form-actions">
-          <button 
-            type="button" 
-            class="cancel-btn" 
-            @click="router.back()"
-          >
-            Cancel
-          </button>
-          <button 
-            type="submit" 
-            class="submit-btn" 
-            :disabled="isLoading"
-          >
-            <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
-            <span v-else>Create Listing</span>
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '../stores/auth'
-
-const router = useRouter()
-const auth = useAuthStore()
-const isLoading = ref(false)
+const isEditing = computed(() => route.name === 'EditListing')
+const showPreview = ref(false)
+const isDragging = ref(false)
+const isSaving = ref(false)
 
 const form = ref({
   title: '',
-  manufacturer: '',
-  model: '',
-  year: new Date().getFullYear(),
-  category: '',
-  price: '',
-  registration: '',
-  total_time: '',
-  engine_hours: '',
-  condition: '',
-  location: '',
-  description: ''
+  simulator: '',
+  aircraft_type: '',
+  developer: '',
+  price_credits: null,
+  description: '',
+  images: []
 })
 
-async function handleSubmit() {
-  if (!auth.isAuthenticated()) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    isLoading.value = true
-
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/listings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
-      },
-      body: JSON.stringify(form.value)
-    })
-
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.error)
-    }
-
-    router.push(`/listings/${data.listing.id}`)
-  } catch (error) {
-    console.error('Failed to create listing:', error)
-    alert(error.message)
-  } finally {
-    isLoading.value = false
-  }
-}
+// Rest of the script...
 </script>
 
 <style scoped>
