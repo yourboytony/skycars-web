@@ -7,6 +7,15 @@
         <p>Loading license details...</p>
       </div>
 
+      <!-- Error State -->
+      <div v-else-if="error" class="error-state glass">
+        <i class="fas fa-exclamation-circle"></i>
+        <h2>{{ error }}</h2>
+        <router-link to="/listings" class="back-btn">
+          Back to Listings
+        </router-link>
+      </div>
+
       <template v-else-if="listing">
         <!-- Header -->
         <div class="listing-header glass">
@@ -47,118 +56,118 @@
             <p class="description">{{ listing.description }}</p>
           </div>
 
-          <!-- Stats -->
-          <div class="stats-section glass">
-            <div class="stat">
-              <i class="fas fa-eye"></i>
-              <span>{{ listing.views }} Views</span>
-            </div>
-            <div class="stat">
-              <i class="fas fa-heart"></i>
-              <span>{{ listing.favorites }} Favorites</span>
-            </div>
-            <div class="stat">
-              <i class="fas fa-clock"></i>
-              <span>Listed {{ formatDate(listing.created_at) }}</span>
+          <!-- Images -->
+          <div v-if="listing.images?.length" class="images-section glass">
+            <h2>Images</h2>
+            <div class="image-gallery">
+              <img 
+                v-for="(image, index) in listing.images"
+                :key="index"
+                :src="image"
+                :alt="`${listing.title} - Image ${index + 1}`"
+                @click="openImageViewer(index)"
+              >
             </div>
           </div>
 
-          <!-- Seller Info & Actions -->
+          <!-- Seller Info -->
           <div class="seller-section glass">
+            <h2>Seller Information</h2>
             <div class="seller-info">
-              <div class="avatar">
-                {{ getInitials(listing.seller_name) }}
+              <div class="seller-avatar">
+                {{ getInitials(listing.seller.name) }}
               </div>
               <div class="seller-details">
-                <h3>{{ listing.seller_name }}</h3>
-                <p>Member since {{ formatDate(listing.seller_joined) }}</p>
+                <h3>{{ listing.seller.name }}</h3>
+                <p>Member since {{ formatDate(listing.seller.created_at) }}</p>
+                <div class="seller-stats">
+                  <span>
+                    <i class="fas fa-star"></i>
+                    {{ listing.seller.rating }} Rating
+                  </span>
+                  <span>
+                    <i class="fas fa-shopping-cart"></i>
+                    {{ listing.seller.sales }} Sales
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div class="action-buttons">
+            <div class="seller-actions">
               <button 
-                v-if="canPurchase"
-                class="purchase-btn"
-                @click="purchaseLicense"
-                :disabled="isProcessing || !hasEnoughCredits"
-              >
-                <i class="fas fa-shopping-cart"></i>
-                {{ 
-                  isProcessing 
-                    ? 'Processing...' 
-                    : hasEnoughCredits 
-                      ? 'Purchase License' 
-                      : 'Insufficient Credits'
-                }}
-              </button>
-
-              <button 
-                v-if="auth.isAuthenticated()"
+                v-if="auth.isAuthenticated() && !isOwnListing"
                 class="message-btn"
-                @click="contactSeller"
+                @click="startChat"
               >
-                <i class="fas fa-envelope"></i>
-                Contact Seller
+                <i class="fas fa-comment"></i>
+                Message Seller
               </button>
-
               <button 
-                v-if="auth.isAuthenticated()"
-                class="favorite-btn"
-                @click="toggleFavorite"
+                v-if="isOwnListing"
+                class="edit-btn"
+                @click="editListing"
               >
-                <i 
-                  :class="['fas', isFavorited ? 'fa-heart' : 'fa-heart-o']"
-                  :style="{ color: isFavorited ? 'var(--primary-color)' : '' }"
-                ></i>
-                {{ isFavorited ? 'Saved' : 'Save' }}
+                <i class="fas fa-edit"></i>
+                Edit Listing
               </button>
-
-              <router-link 
-                v-if="!auth.isAuthenticated()"
-                to="/login" 
-                class="login-btn"
-              >
-                Login to Purchase
-              </router-link>
-            </div>
-          </div>
-
-          <!-- Message Modal -->
-          <div v-if="showMessageModal" class="modal-overlay" @click="showMessageModal = false">
-            <div class="modal glass" @click.stop>
-              <h2>Contact Seller</h2>
-              <textarea 
-                v-model="messageContent"
-                placeholder="Write your message here..."
-                rows="4"
-              ></textarea>
-              <div class="modal-actions">
-                <button 
-                  class="cancel-btn"
-                  @click="showMessageModal = false"
-                >
-                  Cancel
-                </button>
-                <button 
-                  class="send-btn"
-                  @click="sendMessage"
-                  :disabled="!messageContent.trim()"
-                >
-                  Send Message
-                </button>
-              </div>
             </div>
           </div>
         </div>
-      </template>
 
-      <!-- Error State -->
-      <div v-else-if="error" class="error-state glass">
-        <i class="fas fa-exclamation-circle"></i>
-        <h2>{{ error }}</h2>
-        <router-link to="/listings" class="back-btn">
-          Back to Listings
-        </router-link>
+        <!-- Purchase Actions -->
+        <div v-if="!isOwnListing" class="purchase-actions glass">
+          <div class="action-buttons">
+            <button 
+              class="favorite-btn"
+              :class="{ active: isFavorited }"
+              @click="toggleFavorite"
+            >
+              <i class="fas fa-heart"></i>
+              {{ isFavorited ? 'Saved' : 'Save' }}
+            </button>
+            <button 
+              class="purchase-btn"
+              @click="purchaseListing"
+              :disabled="!canPurchase"
+            >
+              <i class="fas fa-shopping-cart"></i>
+              Purchase License
+            </button>
+          </div>
+          <p v-if="!auth.isAuthenticated()" class="login-prompt">
+            Please <router-link to="/login">login</router-link> to purchase
+          </p>
+          <p v-else-if="!canPurchase" class="insufficient-credits">
+            Insufficient credits. <router-link to="/profile">Buy more</router-link>
+          </p>
+        </div>
+      </template>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div v-if="showImageViewer" class="image-viewer-modal" @click="closeImageViewer">
+      <button class="close-btn" @click="closeImageViewer">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="image-viewer-content">
+        <button 
+          class="nav-btn prev"
+          @click.stop="previousImage"
+          v-if="currentImageIndex > 0"
+        >
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <img 
+          :src="listing.images[currentImageIndex]"
+          :alt="`${listing.title} - Image ${currentImageIndex + 1}`"
+        >
+        <button 
+          class="nav-btn next"
+          @click.stop="nextImage"
+          v-if="currentImageIndex < listing.images.length - 1"
+        >
+          <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
   </div>
@@ -676,5 +685,4 @@ onMounted(async () => {
     gap: 1.5rem;
   }
 }
-</style> 
 </style> 
