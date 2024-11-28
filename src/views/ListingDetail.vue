@@ -4,142 +4,148 @@
       <!-- Loading State -->
       <div v-if="isLoading" class="loading-state glass">
         <i class="fas fa-spinner fa-spin"></i>
-        <p>Loading listing details...</p>
+        <p>Loading license details...</p>
       </div>
 
       <template v-else-if="listing">
         <!-- Header -->
         <div class="listing-header glass">
-          <h1>{{ listing.title }}</h1>
-          <div class="header-details">
-            <span class="price">${{ formatPrice(listing.price) }}</span>
-            <span class="location">
-              <i class="fas fa-map-marker-alt"></i> {{ listing.location }}
-            </span>
-            <span class="views">
-              <i class="fas fa-eye"></i> {{ listing.views }} views
-            </span>
+          <div class="header-content">
+            <h1>{{ listing.title }}</h1>
+            <div class="header-details">
+              <span class="simulator">
+                <i :class="getSimulatorIcon(listing.simulator)"></i>
+                {{ getSimulatorName(listing.simulator) }}
+              </span>
+              <span class="developer">
+                <i class="fas fa-code"></i>
+                {{ listing.developer }}
+              </span>
+              <span class="type">
+                <i class="fas fa-plane"></i>
+                {{ formatType(listing.aircraft_type) }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="price-section">
+            <div class="price">
+              <i class="fas fa-coins"></i>
+              {{ listing.price_credits }} Credits
+            </div>
+            <div v-if="auth.isAuthenticated()" class="your-credits">
+              Your Credits: {{ marketplace.credits }}
+            </div>
           </div>
         </div>
 
         <!-- Main Content -->
         <div class="listing-content">
-          <!-- Images -->
-          <div class="listing-images glass">
-            <img 
-              :src="listing.images?.[0] || '/placeholder-aircraft.jpg'" 
-              :alt="listing.title"
-              class="main-image"
-            >
-            <div class="thumbnail-grid" v-if="listing.images?.length > 1">
-              <img 
-                v-for="(image, index) in listing.images.slice(1)" 
-                :key="index"
-                :src="image"
-                :alt="`${listing.title} - Image ${index + 2}`"
-                @click="setMainImage(index + 1)"
-              >
+          <!-- Description -->
+          <div class="description-section glass">
+            <h2>Description</h2>
+            <p class="description">{{ listing.description }}</p>
+          </div>
+
+          <!-- Stats -->
+          <div class="stats-section glass">
+            <div class="stat">
+              <i class="fas fa-eye"></i>
+              <span>{{ listing.views }} Views</span>
+            </div>
+            <div class="stat">
+              <i class="fas fa-heart"></i>
+              <span>{{ listing.favorites }} Favorites</span>
+            </div>
+            <div class="stat">
+              <i class="fas fa-clock"></i>
+              <span>Listed {{ formatDate(listing.created_at) }}</span>
             </div>
           </div>
 
-          <!-- Details -->
-          <div class="listing-info glass">
-            <div class="info-section">
-              <h2>Aircraft Details</h2>
-              <div class="info-grid">
-                <div class="info-item">
-                  <span class="label">Manufacturer</span>
-                  <span class="value">{{ listing.manufacturer }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Model</span>
-                  <span class="value">{{ listing.model }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Year</span>
-                  <span class="value">{{ listing.year }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Category</span>
-                  <span class="value">{{ formatCategory(listing.category) }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Registration</span>
-                  <span class="value">{{ listing.registration || 'Not provided' }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Condition</span>
-                  <span class="value">{{ formatCondition(listing.condition) }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Total Time</span>
-                  <span class="value">{{ listing.total_time || 0 }} hours</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">Engine Hours</span>
-                  <span class="value">{{ listing.engine_hours || 0 }} hours</span>
-                </div>
-              </div>
-            </div>
-
-            <div class="info-section">
-              <h2>Description</h2>
-              <p class="description">{{ listing.description }}</p>
-            </div>
-          </div>
-
-          <!-- Contact Section -->
-          <div class="contact-section glass">
+          <!-- Seller Info & Actions -->
+          <div class="seller-section glass">
             <div class="seller-info">
-              <div class="avatar">{{ getInitials(listing.owner_name) }}</div>
+              <div class="avatar">
+                {{ getInitials(listing.seller_name) }}
+              </div>
               <div class="seller-details">
-                <h3>{{ listing.owner_name }}</h3>
-                <p>Member since {{ formatDate(listing.owner_joined) }}</p>
+                <h3>{{ listing.seller_name }}</h3>
+                <p>Member since {{ formatDate(listing.seller_joined) }}</p>
               </div>
             </div>
 
-            <div class="contact-actions">
+            <div class="action-buttons">
               <button 
-                class="contact-btn primary" 
+                v-if="canPurchase"
+                class="purchase-btn"
+                @click="purchaseLicense"
+                :disabled="isProcessing || !hasEnoughCredits"
+              >
+                <i class="fas fa-shopping-cart"></i>
+                {{ 
+                  isProcessing 
+                    ? 'Processing...' 
+                    : hasEnoughCredits 
+                      ? 'Purchase License' 
+                      : 'Insufficient Credits'
+                }}
+              </button>
+
+              <button 
+                v-if="auth.isAuthenticated()"
+                class="message-btn"
                 @click="contactSeller"
-                :disabled="!auth.isAuthenticated()"
               >
                 <i class="fas fa-envelope"></i>
                 Contact Seller
               </button>
+
               <button 
-                class="contact-btn secondary"
+                v-if="auth.isAuthenticated()"
+                class="favorite-btn"
                 @click="toggleFavorite"
-                :disabled="!auth.isAuthenticated()"
               >
-                <i :class="['fas', isFavorite ? 'fa-heart' : 'fa-heart-o']"></i>
-                {{ isFavorite ? 'Saved' : 'Save' }}
+                <i 
+                  :class="['fas', isFavorited ? 'fa-heart' : 'fa-heart-o']"
+                  :style="{ color: isFavorited ? 'var(--primary-color)' : '' }"
+                ></i>
+                {{ isFavorited ? 'Saved' : 'Save' }}
               </button>
-            </div>
 
-            <p v-if="!auth.isAuthenticated()" class="login-prompt">
-              Please <router-link to="/login">login</router-link> to contact the seller
-            </p>
-          </div>
-        </div>
-
-        <!-- Similar Listings -->
-        <div class="similar-listings glass" v-if="similarListings.length">
-          <h2>Similar Aircraft</h2>
-          <div class="similar-grid">
-            <div 
-              v-for="similar in similarListings" 
-              :key="similar.id"
-              class="similar-card"
-              @click="viewListing(similar.id)"
-            >
-              <img 
-                :src="similar.images?.[0] || '/placeholder-aircraft.jpg'" 
-                :alt="similar.title"
+              <router-link 
+                v-if="!auth.isAuthenticated()"
+                to="/login" 
+                class="login-btn"
               >
-              <div class="similar-info">
-                <h3>{{ similar.title }}</h3>
-                <p class="similar-price">${{ formatPrice(similar.price) }}</p>
+                Login to Purchase
+              </router-link>
+            </div>
+          </div>
+
+          <!-- Message Modal -->
+          <div v-if="showMessageModal" class="modal-overlay" @click="showMessageModal = false">
+            <div class="modal glass" @click.stop>
+              <h2>Contact Seller</h2>
+              <textarea 
+                v-model="messageContent"
+                placeholder="Write your message here..."
+                rows="4"
+              ></textarea>
+              <div class="modal-actions">
+                <button 
+                  class="cancel-btn"
+                  @click="showMessageModal = false"
+                >
+                  Cancel
+                </button>
+                <button 
+                  class="send-btn"
+                  @click="sendMessage"
+                  :disabled="!messageContent.trim()"
+                >
+                  Send Message
+                </button>
               </div>
             </div>
           </div>
@@ -159,19 +165,37 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useMarketplaceStore } from '../stores/marketplace'
 
 const route = useRoute()
 const router = useRouter()
 const auth = useAuthStore()
+const marketplace = useMarketplaceStore()
 
 const listing = ref(null)
 const isLoading = ref(true)
 const error = ref(null)
-const isFavorite = ref(false)
-const similarListings = ref([])
+const isProcessing = ref(false)
+const showMessageModal = ref(false)
+const messageContent = ref('')
+
+// Computed properties
+const canPurchase = computed(() => 
+  auth.isAuthenticated() && 
+  listing.value?.user_id !== auth.user?.id &&
+  listing.value?.status === 'active'
+)
+
+const hasEnoughCredits = computed(() => 
+  marketplace.credits >= (listing.value?.price_credits || 0)
+)
+
+const isFavorited = computed(() => 
+  marketplace.favorites.some(f => f.listing_id === parseInt(route.params.id))
+)
 
 // Fetch listing details
 async function fetchListing() {
@@ -185,7 +209,6 @@ async function fetchListing() {
     if (!response.ok) throw new Error(data.error)
     
     listing.value = data.listing
-    fetchSimilarListings()
   } catch (err) {
     error.value = err.message
   } finally {
@@ -193,42 +216,102 @@ async function fetchListing() {
   }
 }
 
-// Fetch similar listings
-async function fetchSimilarListings() {
+// Purchase license
+async function purchaseLicense() {
+  if (!confirm('Are you sure you want to purchase this license?')) return
+
   try {
+    isProcessing.value = true
     const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/listings?category=${listing.value.category}&exclude=${listing.value.id}`
+      `${import.meta.env.VITE_API_URL}/api/listings/${listing.value.id}/purchase`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${auth.token}`
+        }
+      }
     )
     const data = await response.json()
-    
+
     if (!response.ok) throw new Error(data.error)
     
-    similarListings.value = data.listings.slice(0, 3)
+    await marketplace.fetchCredits()
+    alert('Purchase successful! The seller will contact you with license details.')
+    router.push('/profile/purchases')
   } catch (err) {
-    console.error('Failed to fetch similar listings:', err)
+    alert(err.message)
+  } finally {
+    isProcessing.value = false
   }
 }
 
-// Format helpers
-function formatPrice(price) {
-  return new Intl.NumberFormat('en-US').format(price)
+// Message functions
+function contactSeller() {
+  showMessageModal.value = true
 }
 
-function formatCategory(category) {
-  return category
+async function sendMessage() {
+  try {
+    const response = await fetch(
+      `${import.meta.env.VITE_API_URL}/api/messages`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${auth.token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          receiver_id: listing.value.user_id,
+          listing_id: listing.value.id,
+          content: messageContent.value
+        })
+      }
+    )
+    const data = await response.json()
+
+    if (!response.ok) throw new Error(data.error)
+    
+    showMessageModal.value = false
+    messageContent.value = ''
+    alert('Message sent successfully!')
+  } catch (err) {
+    alert('Failed to send message: ' + err.message)
+  }
+}
+
+// Helper functions
+function getSimulatorIcon(simulator) {
+  const icons = {
+    msfs: 'fas fa-plane',
+    xplane: 'fas fa-times',
+    p3d: 'fas fa-fighter-jet',
+    fsx: 'fas fa-plane-departure'
+  }
+  return icons[simulator] || 'fas fa-plane'
+}
+
+function getSimulatorName(simulator) {
+  const names = {
+    msfs: 'Microsoft Flight Simulator',
+    xplane: 'X-Plane',
+    p3d: 'Prepar3D',
+    fsx: 'FSX'
+  }
+  return names[simulator] || simulator
+}
+
+function formatType(type) {
+  return type
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ')
 }
 
-function formatCondition(condition) {
-  return condition.charAt(0).toUpperCase() + condition.slice(1)
-}
-
 function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
     month: 'long',
-    year: 'numeric'
+    day: 'numeric'
   })
 }
 
@@ -240,48 +323,13 @@ function getInitials(name) {
     .toUpperCase()
 }
 
-// Actions
-async function toggleFavorite() {
-  if (!auth.isAuthenticated()) {
-    router.push('/login')
-    return
-  }
-
-  try {
-    const response = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/listings/${listing.value.id}/favorite`,
-      {
-        method: isFavorite.value ? 'DELETE' : 'POST',
-        headers: {
-          'Authorization': `Bearer ${auth.token}`
-        }
-      }
-    )
-
-    if (!response.ok) throw new Error('Failed to update favorite')
-    
-    isFavorite.value = !isFavorite.value
-  } catch (err) {
-    console.error('Failed to toggle favorite:', err)
-  }
-}
-
-function contactSeller() {
-  if (!auth.isAuthenticated()) {
-    router.push('/login')
-    return
-  }
-  
-  // We'll implement messaging in the next update
-  alert('Messaging feature coming soon!')
-}
-
-function viewListing(id) {
-  router.push(`/listings/${id}`)
-}
-
-onMounted(() => {
+// Lifecycle
+onMounted(async () => {
   fetchListing()
+  if (auth.isAuthenticated()) {
+    await marketplace.fetchCredits()
+    await marketplace.fetchFavorites()
+  }
 })
 </script>
 
@@ -305,127 +353,127 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Header Styles */
 .listing-header {
   padding: 2rem;
   margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
 }
 
-.listing-header h1 {
+.header-content {
+  flex: 1;
+}
+
+.header-content h1 {
   margin: 0 0 1rem;
   color: var(--text-color);
+  font-size: 2rem;
 }
 
 .header-details {
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   color: var(--text-light);
 }
 
-.price {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: var(--primary-color);
-}
-
-.listing-content {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 2rem;
-  margin-bottom: 2rem;
-}
-
-.listing-images {
-  padding: 1rem;
-}
-
-.main-image {
-  width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.thumbnail-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.thumbnail-grid img {
-  width: 100%;
-  aspect-ratio: 1;
-  object-fit: cover;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-
-.thumbnail-grid img:hover {
-  opacity: 0.8;
-}
-
-.listing-info {
-  padding: 2rem;
-}
-
-.info-section {
-  margin-bottom: 2rem;
-}
-
-.info-section h2 {
-  margin: 0 0 1rem;
-  color: var(--text-color);
-}
-
-.info-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.info-item {
+.header-details span {
   display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.label {
+.price-section {
+  text-align: right;
+}
+
+.price {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.your-credits {
+  margin-top: 0.5rem;
   color: var(--text-light);
   font-size: 0.875rem;
 }
 
-.value {
+/* Content Layout */
+.listing-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+/* Description Section */
+.description-section {
+  grid-column: 1;
+  padding: 2rem;
+}
+
+.description-section h2 {
+  margin: 0 0 1rem;
   color: var(--text-color);
 }
 
 .description {
-  color: var(--text-color);
+  color: var(--text-light);
   line-height: 1.6;
   white-space: pre-line;
 }
 
-.contact-section {
-  padding: 2rem;
+/* Stats Section */
+.stats-section {
+  grid-column: 1;
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-around;
+  text-align: center;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-light);
+}
+
+.stat i {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+}
+
+/* Seller Section */
+.seller-section {
   grid-column: 2;
+  grid-row: 1 / span 2;
+  padding: 2rem;
 }
 
 .seller-info {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .avatar {
-  width: 3rem;
-  height: 3rem;
+  width: 4rem;
+  height: 4rem;
   background: var(--primary-color);
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-size: 1.5rem;
   font-weight: 500;
 }
 
@@ -435,112 +483,172 @@ onMounted(() => {
 }
 
 .seller-details p {
-  margin: 0;
+  margin: 0.25rem 0 0;
   color: var(--text-light);
   font-size: 0.875rem;
 }
 
-.contact-actions {
+/* Action Buttons */
+.action-buttons {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.contact-btn {
+.action-buttons button,
+.action-buttons .login-btn {
   width: 100%;
-  padding: 0.75rem;
+  padding: 1rem;
   border-radius: 0.5rem;
   font-size: 1rem;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
-.contact-btn.primary {
+.action-buttons button:hover:not(:disabled),
+.action-buttons .login-btn:hover {
+  transform: translateY(-2px);
+}
+
+.purchase-btn {
   background: var(--primary-color);
   color: white;
   border: none;
 }
 
-.contact-btn.secondary {
+.purchase-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.message-btn {
   background: var(--background-secondary);
   color: var(--text-color);
   border: 1px solid var(--border-color);
 }
 
-.contact-btn:disabled {
+.favorite-btn {
+  background: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.login-btn {
+  background: var(--background-secondary);
+  color: var(--text-color);
+  text-decoration: none;
+  text-align: center;
+}
+
+/* Message Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  width: 90%;
+  max-width: 500px;
+  padding: 2rem;
+}
+
+.modal h2 {
+  margin: 0 0 1rem;
+  color: var(--text-color);
+}
+
+.modal textarea {
+  width: 100%;
+  padding: 1rem;
+  background: var(--background-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  color: var(--text-color);
+  font-size: 1rem;
+  resize: vertical;
+  margin-bottom: 1rem;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.modal-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: var(--background-secondary);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+}
+
+.send-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.send-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.login-prompt {
-  margin: 1rem 0 0;
+/* Loading & Error States */
+.loading-state,
+.error-state {
+  padding: 4rem 2rem;
   text-align: center;
   color: var(--text-light);
-  font-size: 0.875rem;
 }
 
-.login-prompt a {
-  color: var(--primary-color);
-  text-decoration: none;
-}
-
-.similar-listings {
-  padding: 2rem;
-}
-
-.similar-listings h2 {
-  margin: 0 0 1.5rem;
-  color: var(--text-color);
-}
-
-.similar-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem;
-}
-
-.similar-card {
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.similar-card:hover {
-  transform: translateY(-4px);
-}
-
-.similar-card img {
-  width: 100%;
-  aspect-ratio: 16/9;
-  object-fit: cover;
-  border-radius: 0.5rem;
+.loading-state i,
+.error-state i {
+  font-size: 3rem;
   margin-bottom: 1rem;
+  color: var(--primary-color);
 }
 
-.similar-info h3 {
-  margin: 0 0 0.5rem;
+.error-state h2 {
+  margin: 0 0 1rem;
   color: var(--text-color);
 }
 
-.similar-price {
-  margin: 0;
-  color: var(--primary-color);
-  font-weight: 500;
+.back-btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  background: var(--background-secondary);
+  color: var(--text-color);
+  text-decoration: none;
+  border-radius: 0.5rem;
 }
 
+/* Responsive Design */
 @media (max-width: 1024px) {
   .listing-content {
     grid-template-columns: 1fr;
   }
 
-  .contact-section {
+  .seller-section {
     grid-column: 1;
-  }
-
-  .similar-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-row: auto;
   }
 }
 
@@ -549,17 +657,24 @@ onMounted(() => {
     padding: 1rem;
   }
 
-  .header-details {
+  .listing-header {
     flex-direction: column;
-    gap: 1rem;
+    text-align: center;
   }
 
-  .info-grid {
-    grid-template-columns: 1fr;
+  .header-details {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
-  .similar-grid {
-    grid-template-columns: 1fr;
+  .price-section {
+    text-align: center;
+  }
+
+  .stats-section {
+    flex-direction: column;
+    gap: 1.5rem;
   }
 }
+</style> 
 </style> 
