@@ -1,125 +1,111 @@
 <template>
   <div class="auth-page">
-    <div class="auth-container glass">
-      <h1>Create Account</h1>
-      <p class="subtitle">Join the Skycars community</p>
+    <div class="auth-container">
+      <div class="auth-box glass">
+        <h1>Register</h1>
+        <form @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label for="name">Full Name</label>
+            <input 
+              id="name"
+              v-model="form.name"
+              type="text"
+              required
+              autocomplete="name"
+              :class="{ error: errors.name }"
+            >
+            <span v-if="errors.name" class="error-message">{{ errors.name }}</span>
+          </div>
 
-      <form @submit.prevent="handleRegister" class="auth-form">
-        <div class="form-group" :class="{ 'error': errors.name }">
-          <label for="name">Full Name</label>
-          <input 
-            type="text" 
-            id="name"
-            v-model="formData.name"
-            required
-            placeholder="Enter your full name"
-          >
-          <span class="error-message">{{ errors.name }}</span>
-        </div>
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              id="email"
+              v-model="form.email"
+              type="email"
+              required
+              autocomplete="email"
+              :class="{ error: errors.email }"
+            >
+            <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+          </div>
 
-        <div class="form-group" :class="{ 'error': errors.email }">
-          <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email"
-            v-model="formData.email"
-            required
-            placeholder="Enter your email"
-          >
-          <span class="error-message">{{ errors.email }}</span>
-        </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              id="password"
+              v-model="form.password"
+              type="password"
+              required
+              autocomplete="new-password"
+              :class="{ error: errors.password }"
+            >
+            <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+          </div>
 
-        <div class="form-group" :class="{ 'error': errors.password }">
-          <label for="password">Password</label>
-          <input 
-            :type="showPassword ? 'text' : 'password'" 
-            id="password"
-            v-model="formData.password"
-            required
-            placeholder="Create a password"
-          >
+          <div class="form-group">
+            <label for="password_confirmation">Confirm Password</label>
+            <input 
+              id="password_confirmation"
+              v-model="form.password_confirmation"
+              type="password"
+              required
+              autocomplete="new-password"
+              :class="{ error: errors.password_confirmation }"
+            >
+            <span v-if="errors.password_confirmation" class="error-message">
+              {{ errors.password_confirmation }}
+            </span>
+          </div>
+
           <button 
-            type="button"
-            class="toggle-password"
-            @click="showPassword = !showPassword"
+            type="submit" 
+            class="submit-btn"
+            :disabled="isLoading"
           >
-            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
+            <span v-else>Register</span>
           </button>
-          <span class="error-message">{{ errors.password }}</span>
+        </form>
+
+        <div class="auth-links">
+          <router-link to="/login">Already have an account? Login</router-link>
         </div>
-
-        <button 
-          type="submit" 
-          class="submit-button"
-          :disabled="isLoading"
-        >
-          {{ isLoading ? 'Creating Account...' : 'Create Account' }}
-        </button>
-      </form>
-
-      <div class="auth-footer">
-        <p>Already have an account?</p>
-        <router-link to="/login">Log In</router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
-const showPassword = ref(false)
+
+const form = ref({
+  name: '',
+  email: '',
+  password: '',
+  password_confirmation: ''
+})
+
+const errors = ref({})
 const isLoading = ref(false)
 
-const formData = reactive({
-  name: '',
-  email: '',
-  password: ''
-})
-
-const errors = reactive({
-  name: '',
-  email: '',
-  password: ''
-})
-
-const validateForm = () => {
-  let isValid = true
-  
-  // Reset errors
-  errors.name = ''
-  errors.email = ''
-  errors.password = ''
-
-  if (formData.name.length < 2) {
-    errors.name = 'Name must be at least 2 characters'
-    isValid = false
-  }
-
-  if (formData.password.length < 8) {
-    errors.password = 'Password must be at least 8 characters'
-    isValid = false
-  }
-
-  return isValid
-}
-
-const handleRegister = async () => {
-  if (!validateForm()) return
+async function handleSubmit() {
+  errors.value = {}
+  isLoading.value = true
 
   try {
-    isLoading.value = true
-    await auth.register(formData.name, formData.email, formData.password)
-    router.push('/dashboard')
+    await auth.register(form.value)
+    router.push('/')
   } catch (error) {
-    if (error.message.includes('already in use')) {
-      errors.email = error.message
+    if (error.response?.data?.errors) {
+      errors.value = error.response.data.errors
     } else {
-      errors.email = error.message
+      errors.value.general = 'Registration failed. Please try again.'
     }
   } finally {
     isLoading.value = false

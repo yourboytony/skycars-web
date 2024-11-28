@@ -1,202 +1,86 @@
 <template>
   <div class="auth-page">
-    <div class="auth-container glass">
-      <h1>Welcome Back</h1>
-      <p class="subtitle">Log in to your account</p>
+    <div class="auth-container">
+      <div class="auth-box glass">
+        <h1>Login</h1>
+        <form @submit.prevent="handleSubmit">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+              id="email"
+              v-model="form.email"
+              type="email"
+              required
+              autocomplete="email"
+              :class="{ error: errors.email }"
+            >
+            <span v-if="errors.email" class="error-message">{{ errors.email }}</span>
+          </div>
 
-      <form @submit.prevent="handleLogin" class="auth-form">
-        <div class="form-group" :class="{ 'error': errors.email }">
-          <label for="email">Email</label>
-          <input 
-            type="email" 
-            id="email"
-            v-model="formData.email"
-            required
-            placeholder="Enter your email"
-          >
-          <span class="error-message">{{ errors.email }}</span>
-        </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input 
+              id="password"
+              v-model="form.password"
+              type="password"
+              required
+              autocomplete="current-password"
+              :class="{ error: errors.password }"
+            >
+            <span v-if="errors.password" class="error-message">{{ errors.password }}</span>
+          </div>
 
-        <div class="form-group" :class="{ 'error': errors.password }">
-          <label for="password">Password</label>
-          <input 
-            :type="showPassword ? 'text' : 'password'" 
-            id="password"
-            v-model="formData.password"
-            required
-            placeholder="Enter your password"
-          >
           <button 
-            type="button"
-            class="toggle-password"
-            @click="showPassword = !showPassword"
+            type="submit" 
+            class="submit-btn"
+            :disabled="isLoading"
           >
-            <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+            <i v-if="isLoading" class="fas fa-spinner fa-spin"></i>
+            <span v-else>Login</span>
           </button>
-          <span class="error-message">{{ errors.password }}</span>
+        </form>
+
+        <div class="auth-links">
+          <router-link to="/register">Need an account? Register</router-link>
         </div>
-
-        <div v-if="globalError" class="global-error">
-          {{ globalError }}
-        </div>
-
-        <button 
-          type="submit" 
-          class="submit-button"
-          :disabled="isLoading"
-        >
-          {{ isLoading ? 'Logging in...' : 'Log In' }}
-        </button>
-      </form>
-
-      <div class="auth-footer">
-        <p>Don't have an account?</p>
-        <router-link to="/register">Create Account</router-link>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
-const showPassword = ref(false)
+
+const form = ref({
+  email: '',
+  password: ''
+})
+
+const errors = ref({})
 const isLoading = ref(false)
-const globalError = ref('')
 
-const formData = reactive({
-  email: '',
-  password: ''
-})
+async function handleSubmit() {
+  errors.value = {}
+  isLoading.value = true
 
-const errors = reactive({
-  email: '',
-  password: ''
-})
-
-const handleLogin = async () => {
   try {
-    // Reset errors
-    errors.email = ''
-    errors.password = ''
-    globalError.value = ''
-    isLoading.value = true
-
-    console.log('Submitting login form:', { email: formData.email }) // Debug log
-
-    await auth.login(formData.email, formData.password)
-    console.log('Login successful, redirecting...') // Debug log
-    router.push('/dashboard')
+    await auth.login(form.value)
+    const redirectPath = route.query.redirect || '/'
+    router.push(redirectPath)
   } catch (error) {
-    console.error('Login error in component:', error) // Debug log
-    globalError.value = error.message
+    if (error.response?.data?.errors) {
+      errors.value = error.response.data.errors
+    } else {
+      errors.value.general = 'Login failed. Please try again.'
+    }
   } finally {
     isLoading.value = false
   }
 }
-</script>
-
-<style scoped>
-.auth-page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  background: var(--background-primary);
-}
-
-.auth-container {
-  width: 100%;
-  max-width: 400px;
-  padding: 2rem;
-  border-radius: 1rem;
-  text-align: center;
-}
-
-.auth-form {
-  margin-top: 2rem;
-  text-align: left;
-}
-
-.form-group {
-  margin-bottom: 1.5rem;
-  position: relative;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-light);
-}
-
-.form-group input {
-  width: 100%;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
-  background: var(--background-secondary);
-  color: var(--text-color);
-}
-
-.form-group.error input {
-  border-color: #ef4444;
-}
-
-.error-message {
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
-}
-
-.toggle-password {
-  position: absolute;
-  right: 1rem;
-  top: 2.5rem;
-  background: none;
-  border: none;
-  color: var(--text-light);
-  cursor: pointer;
-}
-
-.submit-button {
-  width: 100%;
-  padding: 0.75rem;
-  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
-  color: white;
-  border: none;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  cursor: pointer;
-}
-
-.submit-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.auth-footer {
-  margin-top: 2rem;
-  color: var(--text-light);
-}
-
-.auth-footer a {
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: 500;
-  margin-left: 0.5rem;
-}
-
-.global-error {
-  margin: 1rem 0;
-  padding: 0.75rem;
-  border-radius: 0.5rem;
-  background-color: #fee2e2;
-  color: #ef4444;
-  text-align: center;
-}
-</style> 
+</script> 
