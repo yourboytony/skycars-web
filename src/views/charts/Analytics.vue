@@ -88,7 +88,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { LineChart, BarChart, PieChart, DoughnutChart } from 'vue-chartjs'
+import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
+import PieChart from '@/components/charts/PieChart.vue'
+import DoughnutChart from '@/components/charts/DoughnutChart.vue'
 
 const toast = useToast()
 const timeRange = ref('30d')
@@ -109,19 +112,50 @@ const stats = ref({
 
 // Sample chart data
 const flightActivityData = ref({
-  // Your chart data here
+  labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+  datasets: [{
+    label: 'Flights',
+    data: [12, 19, 3, 5, 2, 3, 7],
+    borderColor: 'rgb(75, 192, 192)',
+    tension: 0.1
+  }]
 })
 
 const popularRoutesData = ref({
-  // Your chart data here
+  labels: ['KLAX-KSFO', 'KJFK-KBOS', 'KORD-KATL', 'KDEN-KPHX', 'KSEA-KPDX'],
+  datasets: [{
+    label: 'Number of Flights',
+    data: [65, 59, 80, 81, 56],
+    backgroundColor: 'rgba(54, 162, 235, 0.5)'
+  }]
 })
 
 const durationData = ref({
-  // Your chart data here
+  labels: ['< 1h', '1-2h', '2-3h', '3-4h', '> 4h'],
+  datasets: [{
+    data: [30, 50, 20, 10, 5],
+    backgroundColor: [
+      'rgba(255, 99, 132, 0.5)',
+      'rgba(54, 162, 235, 0.5)',
+      'rgba(255, 206, 86, 0.5)',
+      'rgba(75, 192, 192, 0.5)',
+      'rgba(153, 102, 255, 0.5)'
+    ]
+  }]
 })
 
 const aircraftData = ref({
-  // Your chart data here
+  labels: ['B737', 'A320', 'E175', 'CRJ9', 'A220'],
+  datasets: [{
+    data: [40, 30, 15, 10, 5],
+    backgroundColor: [
+      'rgba(255, 99, 132, 0.5)',
+      'rgba(54, 162, 235, 0.5)',
+      'rgba(255, 206, 86, 0.5)',
+      'rgba(75, 192, 192, 0.5)',
+      'rgba(153, 102, 255, 0.5)'
+    ]
+  }]
 })
 
 async function refreshData() {
