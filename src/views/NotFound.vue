@@ -26,11 +26,22 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
+import { useToast } from '@/composables/useToast'
 
 const router = useRouter()
+const toast = useToast()
 
-const goBack = () => {
-  router.go(-1)
+function goBack() {
+  router.back()
+}
+
+function goToDashboard() {
+  // Update to use the new dashboard path
+  router.push('/dashboard')
+}
+
+function contactSupport() {
+  toast.info('Support system coming soon!')
 }
 </script>
 

@@ -1,217 +1,143 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '@/stores/user'
+import { useAuthStore } from '@/stores/auth'
 
-// Main Views
+// Core Views
 import Dashboard from '@/views/Dashboard.vue'
-import Profile from '@/views/Profile.vue'
 import Login from '@/views/Login.vue'
-import Register from '@/views/Register.vue'
-import ForgotPassword from '@/views/ForgotPassword.vue'
-import ResetPassword from '@/views/ResetPassword.vue'
+import NotFound from '@/views/NotFound.vue'
 
-// Flight Planning
+// Flight Planning Views
 import FlightPlanning from '@/views/flight/FlightPlanning.vue'
 import FlightHistory from '@/views/flight/FlightHistory.vue'
-import FlightDetails from '@/views/flight/FlightDetails.vue'
 
-// Weather
+// Weather Views
 import Weather from '@/views/weather/Weather.vue'
-import WeatherBriefing from '@/views/weather/WeatherBriefing.vue'
+import WeatherMap from '@/views/weather/WeatherMap.vue'
 
-// Charts & Maps
-import Charts from '@/views/charts/Charts.vue'
-import ChartViewer from '@/views/charts/ChartViewer.vue'
-
-// Aircraft
-import Aircraft from '@/views/aircraft/Aircraft.vue'
-import AircraftDetails from '@/views/aircraft/AircraftDetails.vue'
-
-// Settings & Admin
+// Settings & Profile
+import Profile from '@/views/Profile.vue'
 import Settings from '@/views/settings/Settings.vue'
-import AdminDashboard from '@/views/admin/AdminDashboard.vue'
+
+// Charts & Data
+import Charts from '@/views/charts/Charts.vue'
+import Analytics from '@/views/charts/Analytics.vue'
 
 const routes = [
-  // Public Routes
-  {
-    path: '/login',
-    name: 'Login',
-    component: Login,
-    meta: { 
-      requiresAuth: false,
-      title: 'Login'
-    }
-  },
-  {
-    path: '/register',
-    name: 'Register',
-    component: Register,
-    meta: { 
-      requiresAuth: false,
-      title: 'Register'
-    }
-  },
-  {
-    path: '/forgot-password',
-    name: 'ForgotPassword',
-    component: ForgotPassword,
-    meta: { 
-      requiresAuth: false,
-      title: 'Forgot Password'
-    }
-  },
-  {
-    path: '/reset-password/:token',
-    name: 'ResetPassword',
-    component: ResetPassword,
-    meta: { 
-      requiresAuth: false,
-      title: 'Reset Password'
-    }
-  },
-
-  // Protected Routes
   {
     path: '/',
-    name: 'Dashboard',
+    redirect: '/dashboard'
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: Login,
+    meta: { 
+      requiresGuest: true,
+      layout: 'GuestLayout'
+    }
+  },
+  {
+    path: '/dashboard',
+    name: 'dashboard',
     component: Dashboard,
     meta: { 
       requiresAuth: true,
-      title: 'Dashboard'
+      layout: 'DefaultLayout'
     }
   },
-  {
-    path: '/profile',
-    name: 'Profile',
-    component: Profile,
-    meta: { 
-      requiresAuth: true,
-      title: 'Profile'
-    }
-  },
-
   // Flight Planning Routes
   {
-    path: '/flight-planning',
-    name: 'FlightPlanning',
-    component: FlightPlanning,
+    path: '/flight',
     meta: { 
       requiresAuth: true,
-      title: 'Flight Planning'
-    }
+      layout: 'DefaultLayout'
+    },
+    children: [
+      {
+        path: 'planning',
+        name: 'flight-planning',
+        component: FlightPlanning
+      },
+      {
+        path: 'history',
+        name: 'flight-history',
+        component: FlightHistory
+      }
+    ]
   },
-  {
-    path: '/flight-history',
-    name: 'FlightHistory',
-    component: FlightHistory,
-    meta: { 
-      requiresAuth: true,
-      title: 'Flight History'
-    }
-  },
-  {
-    path: '/flight/:id',
-    name: 'FlightDetails',
-    component: FlightDetails,
-    meta: { 
-      requiresAuth: true,
-      title: 'Flight Details'
-    }
-  },
-
   // Weather Routes
   {
     path: '/weather',
-    name: 'Weather',
-    component: Weather,
     meta: { 
       requiresAuth: true,
-      title: 'Weather'
-    }
+      layout: 'DefaultLayout'
+    },
+    children: [
+      {
+        path: '',
+        name: 'weather',
+        component: Weather
+      },
+      {
+        path: 'map',
+        name: 'weather-map',
+        component: WeatherMap
+      }
+    ]
   },
-  {
-    path: '/weather-briefing/:route',
-    name: 'WeatherBriefing',
-    component: WeatherBriefing,
-    meta: { 
-      requiresAuth: true,
-      title: 'Weather Briefing'
-    }
-  },
-
-  // Charts Routes
+  // Charts & Analytics Routes
   {
     path: '/charts',
-    name: 'Charts',
-    component: Charts,
     meta: { 
       requiresAuth: true,
-      title: 'Charts'
-    }
+      layout: 'DefaultLayout'
+    },
+    children: [
+      {
+        path: '',
+        name: 'charts',
+        component: Charts
+      },
+      {
+        path: 'analytics',
+        name: 'analytics',
+        component: Analytics
+      }
+    ]
   },
-  {
-    path: '/chart/:id',
-    name: 'ChartViewer',
-    component: ChartViewer,
-    meta: { 
-      requiresAuth: true,
-      title: 'Chart Viewer'
-    }
-  },
-
-  // Aircraft Routes
-  {
-    path: '/aircraft',
-    name: 'Aircraft',
-    component: Aircraft,
-    meta: { 
-      requiresAuth: true,
-      title: 'Aircraft'
-    }
-  },
-  {
-    path: '/aircraft/:id',
-    name: 'AircraftDetails',
-    component: AircraftDetails,
-    meta: { 
-      requiresAuth: true,
-      title: 'Aircraft Details'
-    }
-  },
-
-  // Settings & Admin Routes
+  // Settings Routes
   {
     path: '/settings',
-    name: 'Settings',
-    component: Settings,
     meta: { 
       requiresAuth: true,
-      title: 'Settings'
-    }
+      layout: 'DefaultLayout'
+    },
+    children: [
+      {
+        path: '',
+        name: 'settings',
+        component: Settings
+      },
+      {
+        path: 'profile',
+        name: 'profile',
+        component: Profile
+      }
+    ]
   },
-  {
-    path: '/admin',
-    name: 'AdminDashboard',
-    component: AdminDashboard,
-    meta: { 
-      requiresAuth: true,
-      requiresAdmin: true,
-      title: 'Admin Dashboard'
-    }
-  },
-
-  // Error Routes
+  // 404 Route
   {
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
-    component: () => import('@/views/errors/NotFound.vue'),
+    name: 'not-found',
+    component: NotFound,
     meta: { 
-      title: '404 Not Found'
+      layout: 'DefaultLayout'
     }
   }
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
@@ -223,39 +149,30 @@ const router = createRouter({
 })
 
 // Navigation Guards
-router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore()
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
-  const requiresAdmin = to.matched.some(record => record.meta.requiresAdmin)
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const isAuthenticated = authStore.isAuthenticated
 
-  // Update page title
-  document.title = `${to.meta.title} - SkyCast` || 'SkyCast'
-
-  // Check if route requires authentication
-  if (requiresAuth && !userStore.isAuthenticated) {
-    next({ name: 'Login', query: { redirect: to.fullPath } })
+  // Handle guest-only routes (like login)
+  if (to.meta.requiresGuest && isAuthenticated) {
+    next('/dashboard')
     return
   }
 
-  // Check if route requires admin privileges
-  if (requiresAdmin && !userStore.user?.isAdmin) {
-    next({ name: 'Dashboard' })
+  // Handle protected routes
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next('/login')
     return
   }
 
-  // Handle redirect after login
-  if (to.name === 'Login' && userStore.isAuthenticated) {
-    next({ name: 'Dashboard' })
-    return
-  }
-
+  // Allow navigation
   next()
 })
 
-// Error Handling
+// Handle navigation errors
 router.onError((error) => {
-  console.error('Router error:', error)
-  router.push({ name: 'NotFound' })
+  console.error('Navigation Error:', error)
+  router.push('/dashboard')
 })
 
 export default router
