@@ -1,6 +1,6 @@
 <template>
   <div class="profile-page">
-    <!-- Profile Header -->
+    <!-- Header -->
     <div class="profile-header">
       <h1>Profile Settings</h1>
       <button @click="saveChanges" class="btn-primary" :disabled="isSaving">
@@ -9,133 +9,132 @@
       </button>
     </div>
 
-    <!-- Profile Content -->
+    <!-- Main Content -->
     <div class="profile-content">
-      <!-- Personal Information -->
-      <div class="profile-section">
+      <!-- Personal Info -->
+      <section class="profile-section">
         <h2>Personal Information</h2>
         <div class="profile-card">
           <div class="avatar-section">
-            <img :src="user.avatar || '/default-avatar.png'" alt="Profile" class="avatar" />
-            <div class="avatar-actions">
-              <button class="btn-secondary">
+            <div class="avatar-container">
+              <img 
+                :src="profile.avatar || '/default-avatar.png'" 
+                alt="Profile" 
+                class="avatar"
+              />
+              <div class="avatar-overlay">
+                <input 
+                  type="file" 
+                  ref="fileInput" 
+                  @change="handleAvatarChange" 
+                  accept="image/*" 
+                  class="file-input"
+                />
                 <i class="fas fa-camera"></i>
-                Change Photo
-              </button>
-              <button class="btn-secondary" v-if="user.avatar">
-                <i class="fas fa-trash"></i>
-                Remove
-              </button>
+              </div>
             </div>
+            <button 
+              v-if="profile.avatar" 
+              @click="removeAvatar" 
+              class="btn-text"
+            >
+              <i class="fas fa-trash"></i> Remove Photo
+            </button>
           </div>
-          
+
           <div class="form-grid">
             <div class="form-group">
               <label>Full Name</label>
-              <input type="text" v-model="profile.name" placeholder="Your full name" />
+              <input 
+                type="text" 
+                v-model="profile.name" 
+                placeholder="Your name"
+              />
             </div>
             <div class="form-group">
               <label>Email</label>
-              <input type="email" v-model="profile.email" placeholder="Your email" />
+              <input 
+                type="email" 
+                v-model="profile.email" 
+                placeholder="Your email"
+              />
             </div>
             <div class="form-group">
               <label>Phone</label>
-              <input type="tel" v-model="profile.phone" placeholder="Your phone number" />
+              <input 
+                type="tel" 
+                v-model="profile.phone" 
+                placeholder="Your phone number"
+              />
             </div>
             <div class="form-group">
               <label>Location</label>
-              <input type="text" v-model="profile.location" placeholder="Your location" />
+              <input 
+                type="text" 
+                v-model="profile.location" 
+                placeholder="Your location"
+              />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- API Integrations -->
-      <div class="profile-section">
-        <h2>API Integrations</h2>
+      <!-- Flight Planning -->
+      <section class="profile-section">
+        <h2>Flight Planning</h2>
         <div class="profile-card">
-          <!-- SimBrief -->
           <div class="integration-item">
             <div class="integration-header">
+              <img src="@/assets/simbrief-logo.png" alt="SimBrief" class="integration-logo" />
               <div class="integration-info">
-                <img src="@/assets/simbrief-logo.png" alt="SimBrief" class="integration-logo" />
-                <div>
-                  <h3>SimBrief</h3>
-                  <p>Connect your SimBrief account for flight planning</p>
-                </div>
+                <h3>SimBrief Integration</h3>
+                <p>Connect your SimBrief account for flight planning</p>
               </div>
-              <div class="integration-status" :class="{ connected: hasSimBriefCredentials }">
-                {{ hasSimBriefCredentials ? 'Connected' : 'Not Connected' }}
+              <div class="integration-status" :class="{ active: profile.simbrief }">
+                {{ profile.simbrief ? 'Connected' : 'Not Connected' }}
               </div>
             </div>
-            
-            <div class="integration-form">
-              <div class="form-group">
-                <label>SimBrief Username or Pilot ID</label>
-                <input 
-                  type="text" 
-                  v-model="integrations.simbrief.username"
-                  placeholder="Enter your SimBrief username"
-                />
-              </div>
-            </div>
-          </div>
-
-          <!-- CheckWX -->
-          <div class="integration-item">
-            <div class="integration-header">
-              <div class="integration-info">
-                <img src="@/assets/checkwx-logo.png" alt="CheckWX" class="integration-logo" />
-                <div>
-                  <h3>CheckWX Weather</h3>
-                  <p>API key for weather information</p>
-                </div>
-              </div>
-              <div class="integration-status" :class="{ connected: hasWeatherApiKey }">
-                {{ hasWeatherApiKey ? 'Connected' : 'Not Connected' }}
-              </div>
-            </div>
-            
-            <div class="integration-form">
-              <div class="form-group">
-                <label>API Key</label>
-                <input 
-                  type="password" 
-                  v-model="integrations.checkwx.apiKey"
-                  placeholder="Enter your CheckWX API key"
-                />
-              </div>
+            <div class="form-group">
+              <label>SimBrief Username</label>
+              <input 
+                type="text" 
+                v-model="profile.simbrief" 
+                placeholder="Enter your SimBrief username"
+              />
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- Preferences -->
-      <div class="profile-section">
+      <section class="profile-section">
         <h2>Preferences</h2>
         <div class="profile-card">
           <div class="preferences-grid">
             <div class="preference-item">
-              <label class="switch-label">
-                <span>Dark Mode</span>
-                <div class="switch">
-                  <input type="checkbox" v-model="preferences.darkMode">
-                  <span class="slider"></span>
-                </div>
+              <span>Dark Mode</span>
+              <label class="switch">
+                <input type="checkbox" v-model="preferences.darkMode">
+                <span class="slider"></span>
               </label>
             </div>
             <div class="preference-item">
-              <label class="switch-label">
-                <span>Email Notifications</span>
-                <div class="switch">
-                  <input type="checkbox" v-model="preferences.emailNotifications">
-                  <span class="slider"></span>
-                </div>
+              <span>Email Notifications</span>
+              <label class="switch">
+                <input type="checkbox" v-model="preferences.emailNotifications">
+                <span class="slider"></span>
               </label>
+            </div>
+            <div class="preference-item">
+              <span>Units</span>
+              <select v-model="preferences.units" class="select-input">
+                <option value="imperial">Imperial</option>
+                <option value="metric">Metric</option>
+              </select>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   </div>
 </template>
@@ -143,66 +142,75 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { useToast } from '@/composables/useToast'
 
 const userStore = useUserStore()
+const toast = useToast()
+const fileInput = ref(null)
 const isSaving = ref(false)
 
 const profile = ref({
   name: '',
   email: '',
   phone: '',
-  location: ''
-})
-
-const integrations = ref({
-  simbrief: {
-    username: ''
-  },
-  checkwx: {
-    apiKey: ''
-  }
+  location: '',
+  avatar: null,
+  simbrief: ''
 })
 
 const preferences = ref({
   darkMode: false,
-  emailNotifications: true
+  emailNotifications: true,
+  units: 'imperial'
 })
 
-const hasSimBriefCredentials = ref(false)
-const hasWeatherApiKey = ref(false)
-
 onMounted(async () => {
-  // Load user data
-  const userData = await userStore.getUserProfile()
-  if (userData) {
-    profile.value = { ...userData }
-  }
-
-  // Load integrations
-  const simbriefCreds = await userStore.getSimBriefCredentials()
-  if (simbriefCreds) {
-    integrations.value.simbrief.username = simbriefCreds.username
-    hasSimBriefCredentials.value = true
-  }
-
-  const weatherKey = await userStore.getWeatherApiKey()
-  if (weatherKey) {
-    integrations.value.checkwx.apiKey = weatherKey
-    hasWeatherApiKey.value = true
+  try {
+    const userData = await userStore.getUserProfile()
+    if (userData) {
+      profile.value = { ...userData }
+      preferences.value = { ...userData.preferences }
+    }
+  } catch (error) {
+    toast.error('Failed to load profile')
   }
 })
 
 async function saveChanges() {
   isSaving.value = true
   try {
-    await userStore.updateProfile(profile.value)
-    await userStore.saveSimBriefCredentials(integrations.value.simbrief)
-    await userStore.saveWeatherApiKey(integrations.value.checkwx.apiKey)
-    // Show success message
+    await userStore.updateProfile({
+      ...profile.value,
+      preferences: preferences.value
+    })
+    toast.success('Profile updated successfully')
   } catch (error) {
-    // Show error message
+    toast.error('Failed to update profile')
   } finally {
     isSaving.value = false
+  }
+}
+
+async function handleAvatarChange(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  try {
+    const avatarUrl = await userStore.uploadAvatar(file)
+    profile.value.avatar = avatarUrl
+    toast.success('Avatar updated successfully')
+  } catch (error) {
+    toast.error('Failed to update avatar')
+  }
+}
+
+async function removeAvatar() {
+  try {
+    await userStore.removeAvatar()
+    profile.value.avatar = null
+    toast.success('Avatar removed successfully')
+  } catch (error) {
+    toast.error('Failed to remove avatar')
   }
 }
 </script>
@@ -218,7 +226,7 @@ async function saveChanges() {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .profile-header h1 {
@@ -227,22 +235,29 @@ async function saveChanges() {
   color: var(--text-primary);
 }
 
+.profile-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
 .profile-section {
-  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .profile-section h2 {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  margin-bottom: 16px;
 }
 
 .profile-card {
   background: white;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 24px;
+  box-shadow: var(--shadow-sm);
 }
 
 .avatar-section {
@@ -254,16 +269,46 @@ async function saveChanges() {
   border-bottom: 1px solid var(--border-color);
 }
 
-.avatar {
+.avatar-container {
+  position: relative;
   width: 100px;
   height: 100px;
   border-radius: 12px;
+  overflow: hidden;
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
 }
 
-.avatar-actions {
+.avatar-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
-  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.avatar-overlay:hover {
+  opacity: 1;
+}
+
+.avatar-overlay i {
+  color: white;
+  font-size: 24px;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
 }
 
 .form-grid {
@@ -284,51 +329,63 @@ async function saveChanges() {
   color: var(--text-secondary);
 }
 
-.form-group input {
-  padding: 8px 12px;
+.form-group input,
+.select-input {
+  padding: 10px 16px;
   border: 1px solid var(--border-color);
-  border-radius: 6px;
+  border-radius: 8px;
   font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.select-input:focus {
+  border-color: var(--primary);
+  outline: none;
 }
 
 .integration-item {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.integration-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .integration-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.integration-info {
   display: flex;
   align-items: center;
   gap: 16px;
 }
 
 .integration-logo {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   border-radius: 8px;
 }
 
-.integration-status {
+.integration-info {
+  flex: 1;
+}
+
+.integration-info h3 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.integration-info p {
   font-size: 14px;
-  padding: 4px 12px;
+  color: var(--text-secondary);
+}
+
+.integration-status {
+  padding: 6px 12px;
   border-radius: 100px;
+  font-size: 14px;
   background: #fee2e2;
   color: #991b1b;
 }
 
-.integration-status.connected {
+.integration-status.active {
   background: #dcfce7;
   color: #166534;
 }
@@ -339,7 +396,7 @@ async function saveChanges() {
   gap: 24px;
 }
 
-.switch-label {
+.preference-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -361,10 +418,7 @@ async function saveChanges() {
 .slider {
   position: absolute;
   cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background-color: #e2e8f0;
   transition: .4s;
   border-radius: 24px;
@@ -393,6 +447,12 @@ input:checked + .slider:before {
 @media (max-width: 768px) {
   .profile-page {
     padding: 16px;
+  }
+
+  .profile-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
   }
 
   .avatar-section {
