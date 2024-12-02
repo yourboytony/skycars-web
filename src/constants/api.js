@@ -1,1 +1,0 @@
-export const API_URL = 'https://skycars-api.nigroan67.workers.dev' 
