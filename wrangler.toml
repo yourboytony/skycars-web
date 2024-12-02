@@ -1,0 +1,25 @@
+name = "flight-planner"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Production database
+[[d1_databases]]
+binding = "DB"
+database_name = "skycars-db"
+database_id = "f4e0aa03-d50a-450e-9bdd-09bb06112f69"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "production"
+API_VERSION = "v1"
+ALLOWED_ORIGINS = "http://localhost:3000,https://skycarscollective.ca/"
+CACHE_TTL = "1800"  # 30 minutes in seconds
+CHECKWX_API_URL = "https://api.checkwx.com/metar/"
+TILE_SERVER = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+# Development environment
+[env.development]
+name = "flight-planner-dev"
+[env.development.vars]
+ENVIRONMENT = "development"
+ALLOWED_ORIGINS = "http://localhost:3000" 
