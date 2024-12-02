@@ -1,114 +1,138 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { useAuthStore } from './auth'
+
+interface WeatherData {
+  icao: string
+  timestamp: string
+  data: any // Replace with proper type when available
+}
+
+interface WeatherState {
+  currentWeather: Record<string, WeatherData>
+  forecasts: WeatherData[]
+  metars: Record<string, WeatherData>
+  tafs: Record<string, WeatherData>
+  loading: boolean
+  lastUpdate: string | null
+}
 
 export const useWeatherStore = defineStore('weather', () => {
   const toast = useToast()
-  const authStore = useAuthStore()
-
-  // State
-  const currentWeather = ref({})
-  const forecasts = ref([])
-  const metars = ref({})
-  const tafs = ref({})
-  const loading = ref(false)
-  const lastUpdate = ref(null)
-
-  // Getters
-  const isDataStale = computed(() => {
-    if (!lastUpdate.value) return true
-    const staleThreshold = 5 * 60 * 1000 // 5 minutes
-    return Date.now() - lastUpdate.value > staleThreshold
+  
+  const state = ref<WeatherState>({
+    currentWeather: {},
+    forecasts: [],
+    metars: {},
+    tafs: {},
+    loading: false,
+    lastUpdate: null
   })
 
-  // Actions
-  async function fetchWeather(icao) {
-    loading.value = true
+  async function fetchMetar(icao: string) {
     try {
-      const response = await fetch(`/api/weather/${icao}`, {
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`
-        }
-      })
-
-      if (!response.ok) throw new Error('Failed to fetch weather')
+      state.value.loading = true
+      const response = await fetch(`/api/weather/metar/${icao}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch METAR')
+      }
 
       const data = await response.json()
-      currentWeather.value = data.current
-      forecasts.value = data.forecast
-      lastUpdate.value = Date.now()
+      state.value.metars[icao] = {
+        icao,
+        timestamp: new Date().toISOString(),
+        data
+      }
+      state.value.lastUpdate = new Date().toISOString()
     } catch (error) {
-      toast.error(error.message || 'Failed to load weather')
-      throw error
+      toast.show(error instanceof Error ? error.message : 'Failed to fetch METAR', 'error')
     } finally {
-      loading.value = false
+      state.value.loading = false
     }
   }
 
-  async function fetchMetar(icao) {
+  async function fetchTaf(icao: string) {
     try {
-      const response = await fetch(`/api/weather/metar/${icao}`, {
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`
-        }
-      })
-
-      if (!response.ok) throw new Error('Failed to fetch METAR')
+      state.value.loading = true
+      const response = await fetch(`/api/weather/taf/${icao}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch TAF')
+      }
 
       const data = await response.json()
-      metars.value[icao] = {
-        raw: data.raw,
-        decoded: data.decoded,
-        timestamp: Date.now()
+      state.value.tafs[icao] = {
+        icao,
+        timestamp: new Date().toISOString(),
+        data
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to load METAR')
-      throw error
+      toast.show(error instanceof Error ? error.message : 'Failed to fetch TAF', 'error')
+    } finally {
+      state.value.loading = false
     }
   }
 
-  async function fetchTaf(icao) {
+  async function fetchWeather(icao: string) {
     try {
-      const response = await fetch(`/api/weather/taf/${icao}`, {
-        headers: {
-          'Authorization': `Bearer ${authStore.token}`
-        }
-      })
-
-      if (!response.ok) throw new Error('Failed to fetch TAF')
+      state.value.loading = true
+      const response = await fetch(`/api/weather/${icao}`)
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch weather')
+      }
 
       const data = await response.json()
-      tafs.value[icao] = {
-        raw: data.raw,
-        decoded: data.decoded,
-        timestamp: Date.now()
+      state.value.currentWeather[icao] = {
+        icao,
+        timestamp: new Date().toISOString(),
+        data
       }
     } catch (error) {
-      toast.error(error.message || 'Failed to load TAF')
-      throw error
+      toast.show(error instanceof Error ? error.message : 'Failed to fetch weather', 'error')
+    } finally {
+      state.value.loading = false
     }
+  }
+
+  // Add these new methods for the WeatherLayer component
+  async function fetchRadarData() {
+    // Implementation
+  }
+
+  async function fetchCloudsData() {
+    // Implementation
+  }
+
+  async function fetchTemperatureData() {
+    // Implementation
+  }
+
+  async function fetchWindData() {
+    // Implementation
   }
 
   function clearWeatherData() {
-    currentWeather.value = {}
-    forecasts.value = []
-    metars.value = {}
-    tafs.value = {}
-    lastUpdate.value = null
+    state.value = {
+      currentWeather: {},
+      forecasts: [],
+      metars: {},
+      tafs: {},
+      loading: false,
+      lastUpdate: null
+    }
   }
 
   return {
-    currentWeather,
-    forecasts,
-    metars,
-    tafs,
-    loading,
-    lastUpdate,
-    isDataStale,
-    fetchWeather,
+    ...state.value,
     fetchMetar,
     fetchTaf,
+    fetchWeather,
+    fetchRadarData,
+    fetchCloudsData,
+    fetchTemperatureData,
+    fetchWindData,
     clearWeatherData
   }
 }) 

@@ -1,10 +1,12 @@
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 
 export function useTheme() {
   const isDark = ref(false)
+  const theme = ref<'light' | 'dark'>('light')
 
   const updateTheme = (dark: boolean) => {
     isDark.value = dark
+    theme.value = dark ? 'dark' : 'light'
     document.documentElement.classList.toggle('dark', dark)
   }
 
@@ -19,6 +21,7 @@ export function useTheme() {
 
   return {
     isDark,
+    theme,
     toggleTheme
   }
 } 
