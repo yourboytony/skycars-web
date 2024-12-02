@@ -22,6 +22,9 @@ import Settings from '@/views/settings/Settings.vue'
 import Charts from '@/views/charts/Charts.vue'
 import Analytics from '@/views/charts/Analytics.vue'
 
+// Error View
+import Error from '@/views/Error.vue'
+
 const routes = [
   {
     path: '/',
@@ -124,6 +127,16 @@ const routes = [
         component: Profile
       }
     ]
+  },
+  // Error Route
+  {
+    path: '/error',
+    name: 'error',
+    component: Error,
+    props: true,
+    meta: { 
+      layout: 'GuestLayout'
+    }
   },
   // 404 Route
   {
