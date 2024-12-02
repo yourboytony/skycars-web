@@ -43,7 +43,7 @@ const createChart = () => {
           beginAtZero: true,
           grid: {
             color: gridColor,
-            drawBorder: false
+            display: true
           },
           border: {
             display: false
@@ -52,7 +52,7 @@ const createChart = () => {
         x: {
           grid: {
             color: gridColor,
-            drawBorder: false
+            display: true
           },
           border: {
             display: false
