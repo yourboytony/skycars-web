@@ -1,16 +1,10 @@
-import { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
+import { NavigationGuard } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
-export default async function auth(
-  to: RouteLocationNormalized,
-  from: RouteLocationNormalized,
-  next: NavigationGuardNext
-) {
-  const authStore = useAuthStore()
-
-  if (!authStore.isAuthenticated) {
-    return next({ name: 'login', query: { redirect: to.fullPath } })
+export const authMiddleware: NavigationGuard = (to) => {
+  const auth = useAuthStore()
+  
+  if (!auth.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
   }
-
-  return next()
 } 
