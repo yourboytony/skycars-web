@@ -22,6 +22,8 @@ const { isDark } = useTheme()
 const createChart = () => {
   if (!chartRef.value) return
 
+  const gridColor = isDark.value ? '#334155' : '#e2e8f0'
+
   const config: ChartConfiguration = {
     type: 'line',
     data: {
@@ -41,14 +43,20 @@ const createChart = () => {
         y: {
           beginAtZero: true,
           grid: {
-            color: isDark.value ? '#334155' : '#e2e8f0',
-            borderColor: isDark.value ? '#334155' : '#e2e8f0'
+            color: gridColor,
+            drawBorder: false
+          },
+          border: {
+            display: false
           }
         },
         x: {
           grid: {
-            color: isDark.value ? '#334155' : '#e2e8f0',
-            borderColor: isDark.value ? '#334155' : '#e2e8f0'
+            color: gridColor,
+            drawBorder: false
+          },
+          border: {
+            display: false
           }
         }
       }
